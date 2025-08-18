@@ -36,6 +36,7 @@ export default function RootLayout({
     ) : (
       <html lang="en">
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+          <div className="w-full bg-yellow-100 text-yellow-800 text-sm py-2 px-4">Clerk not configured. Set NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY to enable auth UI.</div>
           {children}
         </body>
       </html>
