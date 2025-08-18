@@ -1,9 +1,9 @@
 // components/landing/Sponsors.tsx
 export default function Sponsors() {
   const logos = [
-    "/images/sponsors/sponsor-1.png",
-    "/images/sponsors/sponsor-2.png",
-    "/images/sponsors/sponsor-3.png",
+    "/images/sponsors/sponsor-1.svg",
+    "/images/sponsors/sponsor-2.svg",
+    "/images/sponsors/sponsor-3.svg",
   ];
 
   return (
