@@ -1,0 +1,95 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "sqlserver"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    id            String         @id // Clerk user id
+    email         String         @unique
+    name          String?
+    role          String         @default("PARTICIPANT")
+    memberOfTeams Team[]         @relation("Members")
+    ownedTeams    Team[]         @relation("Owner")
+    registrations Registration[] @relation("UserRegistrations")
+    eventsCreated Event[]        @relation("EventCreator")
+    scores        Score[]        @relation("JudgeScores")
+    createdAt     DateTime       @default(now())
+    updatedAt     DateTime       @updatedAt
+}
+
+model Event {
+    id            String         @id @default(cuid())
+    title         String
+    description   String
+    theme         String?
+    tracksJson    String?
+    mode          String // online | offline | hybrid
+    rules         String?
+    timeline      String?
+    prizes        String?
+    sponsors      String?
+    startAt       DateTime
+    endAt         DateTime
+    createdById   String
+    createdBy     User           @relation("EventCreator", fields: [createdById], references: [id], onDelete: NoAction, onUpdate: NoAction)
+    teams         Team[]
+    registrations Registration[]
+    rounds        Round[]
+    createdAt     DateTime       @default(now())
+    updatedAt     DateTime       @updatedAt
+}
+
+model Team {
+    id            String         @id @default(cuid())
+    name          String
+    eventId       String
+    event         Event          @relation(fields: [eventId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+    ownerId       String
+    owner         User           @relation("Owner", fields: [ownerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+    members       User[]         @relation("Members")
+    registrations Registration[] @relation("TeamRegistrations")
+    createdAt     DateTime       @default(now())
+    updatedAt     DateTime       @updatedAt
+}
+
+model Registration {
+    id        String   @id @default(cuid())
+    eventId   String
+    event     Event    @relation(fields: [eventId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+    userId    String
+    user      User     @relation("UserRegistrations", fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+    teamId    String?
+    team      Team?    @relation("TeamRegistrations", fields: [teamId], references: [id], onDelete: SetNull, onUpdate: NoAction)
+    role      String   @default("PARTICIPANT")
+    createdAt DateTime @default(now())
+
+    // Compound unique to ensure a user registers only once per event
+    @@unique([eventId, userId])
+}
+
+model Round {
+    id      String  @id @default(cuid())
+    name    String
+    index   Int
+    eventId String
+    event   Event   @relation(fields: [eventId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+    scores  Score[]
+}
+
+model Score {
+    id           String   @id @default(cuid())
+    submissionId String // Mongo submission _id string
+    roundId      String
+    round        Round    @relation(fields: [roundId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+    judgeId      String
+    judge        User     @relation("JudgeScores", fields: [judgeId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+    score        Int
+    feedback     String?
+    createdAt    DateTime @default(now())
+
+    @@unique([submissionId, roundId, judgeId])
+}
