@@ -1,27 +1,30 @@
-"use client";
-import { SignedIn, SignedOut, SignInButton, SignOutButton } from "@clerk/nextjs";
+import Image from "next/image";
+import Navbar from "@/components/landing/Navbar";
+import Hero from "@/components/landing/Hero";
+import Features from "@/components/landing/Features";
+import EventsShowcase from "@/components/landing/EventsShowcase";
+import HowItWorks from "@/components/landing/HowItWorks";
+import Sponsors from "@/components/landing/Sponsors";
+import Footer from "@/components/landing/Footer";
+import BackgroundWords from "@/components/landing/BackgroundWords";
+
+export const dynamic = "force-dynamic";
 
 export default function Home() {
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold">Welcome to the App</h1>
-        <p className="text-lg">This is a simple app using Clerk for authentication.</p>
-        <SignedIn>
-          <div className="mt-6 flex justify-center">
-            <SignOutButton>
-              <button className="px-4 py-2 rounded bg-gray-900 text-white hover:bg-black transition">Sign out</button>
-            </SignOutButton>
-          </div>
-        </SignedIn>
-        <SignedOut>
-          <div className="mt-6 flex justify-center">
-            <SignInButton>
-              <button className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 transition">Sign in</button>
-            </SignInButton>
-          </div>
-        </SignedOut>
+     <main className="min-h-screen bg-black text-white">
+      <BackgroundWords />
+      <Navbar />
+      <Hero />
+      <div className="mx-auto max-w-7xl px-4">
+        <Features />
+        <EventsShowcase />
+        <HowItWorks />
+        <Sponsors />
       </div>
-    </div>
+      <Footer />
+    </main>
+
   );
 }
