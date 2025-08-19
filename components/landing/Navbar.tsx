@@ -3,6 +3,10 @@
 import Link from "next/link";
 import { Button } from "../../components/retroui/Button";
 import { Text } from "../../components/retroui/Text";
+import { SignInButton } from "@clerk/nextjs";
+import { SignOutButton } from "@clerk/nextjs";
+import { SignedIn } from "@clerk/nextjs";
+import { SignedOut } from "@clerk/nextjs";
 
 export default function Navbar() {
   return (
@@ -10,9 +14,9 @@ export default function Navbar() {
       <div className="mx-auto max-w-7xl px-4 py-4 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-          <Text as="span" className="text-lg font-bold text-foreground">
+          <Text as="p" className="text-lg font-bold text-foreground">
             Open
-            <Text as="span" className="text-primary">
+            <Text as="p" className="text-primary">
               Hacks
             </Text>
           </Text>
@@ -33,12 +37,17 @@ export default function Navbar() {
 
         {/* Buttons */}
         <div className="flex items-center gap-3">
-          <Link href="/login">
+          <SignedOut>
             <Button variant="secondary">
-              Sign in
+              <SignInButton/>
             </Button>
-          </Link>
-          <Link href="/signup">
+          </SignedOut>
+          <SignedIn>
+            <Button variant="secondary">
+              <SignOutButton/>
+            </Button>
+          </SignedIn>
+          <Link href="/sign-up">
             <Button>
               Get Started
             </Button>

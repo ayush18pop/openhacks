@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth } from '@/src/lib/auth';
-import { prisma } from '@/src/lib/prisma';
+import { requireAuth } from '@/lib/auth';
+// Update the import path to match your project structure
+import { prisma } from '../../../src/lib/prisma';
 import { auth } from '@clerk/nextjs/server';
 
 // Type for user profile update data - simplified for new schema
