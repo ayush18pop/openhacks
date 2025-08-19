@@ -11,20 +11,45 @@ import {BoxesCore} from "../components/landing/Background";
 export const dynamic = "force-dynamic";
 
 export default function Home() {
-
   return (
-     <main>
-      <BoxesCore />
-      <Navbar />
-      <Hero />
-      <div>
-        <Features />
-        <EventsShowcase />
-        <HowItWorks />
-        <Sponsors />
-      </div>
-      <Footer />
-    </main>
-
+    <div className="min-h-screen w-full bg-white relative">
+      <main className="relative z-20 mt-4 ml-4 mr-4 rounded-xl overflow-hidden">
+        <div
+          className="absolute inset-0 z-0"
+          style={{
+            backgroundImage: `
+              linear-gradient(to right, #e5e7eb 1px, transparent 1px),
+              linear-gradient(to bottom, #e5e7eb 1px, transparent 1px)
+            `,
+            backgroundSize: "40px 40px",
+          }}
+        />
+        <div className="relative z-10">
+          <div className="mb-6">
+            <Navbar />
+          </div>
+          <div className="mb-6">
+            <Hero />
+          </div>
+          <div className="mx-auto max-w-7xl px-4">
+            <div className="mb-6">
+              <Features />
+            </div>
+            <div className="mb-6">
+              <EventsShowcase />
+            </div>
+            <div className="mb-6">
+              <HowItWorks />
+            </div>
+            <div className="mb-6">
+              <Sponsors />
+            </div>
+          </div>
+          <div className="mb-6">
+            <Footer />
+          </div>
+        </div>
+      </main>
+    </div>
   );
 }

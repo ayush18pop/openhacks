@@ -13,10 +13,10 @@ export default function Features() {
 
   return (
     <section className="mt-16">
-      <h2 className="text-2xl font-bold text-foreground glass-border">
+      <h2 className="text-2xl font-bold text-foreground">
         Built for hackathons — everything you need
       </h2>
-      <p className="mt-2 text-sm text-muted-foreground max-w-2xl glass-border">
+      <p className="mt-2 text-sm text-muted-foreground max-w-2xl">
         A compact, opinionated feature set that covers the full event lifecycle from launch to judging.
       </p>
 

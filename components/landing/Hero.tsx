@@ -8,10 +8,10 @@ export default function Hero() {
     <section className="px-6 py-20">
       <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-10">
         <div>
-          <h1 className="text-4xl font-bold text-foreground glass-border">
+          <h1 className="text-4xl font-bold text-foreground">
             Host. Build. <span className="text-primary">Ship</span> faster.
           </h1>
-          <p className="mt-4 text-muted-foreground glass-border">
+          <p className="mt-4 text-muted-foreground">
             Create events, manage teams, accept submissions, and run judging — all in one platform.
           </p>
 
