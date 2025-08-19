@@ -4,6 +4,7 @@ import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 
 import { Archivo_Black, Space_Grotesk } from "next/font/google";
+import QueryProvider from "@/components/providers/QueryProvider";
  
 const archivoBlack = Archivo_Black({
   subsets: ["latin"],
@@ -43,13 +44,15 @@ export default function RootLayout({
   const hasClerk = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
   return (
     hasClerk ? (
-      <ClerkProvider>
-        <html lang="en">
-          <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-            {children}
-          </body>
+      <QueryProvider>
+        <ClerkProvider>
+          <html lang="en">
+            <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+              {children}
+            </body>
         </html>
       </ClerkProvider>
+      </QueryProvider>
     ) : (
       <html lang="en">
       <body className={`${archivoBlack.variable} ${space.variable}`}>

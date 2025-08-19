@@ -15,10 +15,7 @@ export default function Navbar() {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
           <Text as="p" className="text-lg font-bold text-foreground">
-            Open
-            <Text as="p" className="text-primary">
-              Hacks
-            </Text>
+            Open <span className="text-primary">Hacks</span>
           </Text>
         </Link>
 

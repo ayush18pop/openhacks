@@ -1,15 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/retroui/Card";
+import { Button } from "../../components/retroui/Button";
+import { Input } from "../../components/retroui/Input";
+import { Label } from "../../components/retroui/Label";
 
 export default function ProfilePage() {
   const [step, setStep] = useState<"role" | "questions">("role");
   const [role, setRole] = useState<"PARTICIPANT" | "ORGANISER" | "JUDGE" | null>(null);
-  const [answers, setAnswers] = useState<any>({});
+  const [answers, setAnswers] = useState<Record<string, string>>({});
 
   function handleRoleSelect(selected: "PARTICIPANT" | "ORGANISER" | "JUDGE") {
     setRole(selected);
