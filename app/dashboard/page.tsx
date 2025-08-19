@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import Image from 'next/image';
 import { useQuery } from "@tanstack/react-query";
 import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
@@ -23,7 +24,7 @@ import {
   Award,
   Target,
   Zap,
-  Heart,
+  
   BookOpen,
   Activity
 } from "lucide-react";
@@ -251,11 +252,13 @@ export default function DashboardPage() {
       {/* Enhanced Profile Header */}
       <Card className="p-8 bg-gradient-to-r from-card to-muted/10 border-2 w-full">
         <div className="flex flex-col lg:flex-row items-center gap-8">
-          <div className="relative shrink-0">
-            <img
+          <div className="relative shrink-0 w-32 h-32">
+            <Image
               src={clerkUser?.imageUrl || '/default-avatar.png'}
               alt={clerkUser?.fullName || "Avatar"}
-              className="w-32 h-32 border-4 border-border shadow-lg rounded-lg transition-transform hover:scale-105"
+              width={128}
+              height={128}
+              className="border-4 border-border shadow-lg rounded-lg transition-transform hover:scale-105 object-cover"
             />
             {user.level && (
               <Badge className="absolute -top-2 -right-2 bg-yellow-400 text-black font-bold text-sm px-2 py-1">

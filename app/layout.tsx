@@ -1,10 +1,9 @@
-import { Metadata } from "next";
 import Navbar from "../components/landing/Navbar";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Archivo_Black, Space_Grotesk } from "next/font/google";
-import QueryProvider from "@/components/providers/QueryProvider";
+import QueryProvider from "../components/providers/QueryProvider";
 import { ToastProvider } from "../components/retroui/Toast";
 
 // --- Font Definitions ---

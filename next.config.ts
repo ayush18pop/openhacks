@@ -21,6 +21,12 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**', // This allows any path from Cloudinary
       },
+      {
+        protocol: 'https',
+        hostname: 'img.clerk.com',
+        port: '',
+        pathname: '/**', // Allow Clerk hosted images (profile photos)
+      },
       // You can add other hostnames here if needed
     ],
   },  

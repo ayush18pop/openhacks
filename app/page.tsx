@@ -1,12 +1,11 @@
-import Image from "next/image";
-import Navbar from "../components/landing/Navbar";
+// ...existing code...
 import Hero from "../components/landing/Hero";
 import Features from "../components/landing/Features";
 import EventsShowcase from "../components/landing/EventsShowcase";
 import HowItWorks from "../components/landing/HowItWorks";
 import Sponsors from "../components/landing/Sponsors";
 import Footer from "../components/landing/Footer";
-import {BoxesCore} from "../components/landing/Background";
+// ...existing code...
 
 export const dynamic = "force-dynamic";
 

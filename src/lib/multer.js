@@ -1,5 +1,5 @@
-const path = require("path");
-const multer = require("multer"); // to upload img
+import path from "path";
+import multer from "multer"; // to upload img
 
 //Photo Storage
 const photoStorage = multer.diskStorage({

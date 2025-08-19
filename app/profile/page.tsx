@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from 'next/image';
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader } from "../../components/retroui/Card";
 import { Button } from "../../components/retroui/Button";
@@ -90,13 +91,15 @@ export default function ProfilePage() {
     <main className="container mx-auto max-w-6xl px-4 py-8 md:py-12 space-y-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-center gap-6">
-        <img
-          src={
-            profile.avatar || (clerkLoaded ? user?.imageUrl : undefined) || '/retro-pixel-avatar.png'
-          }
-          alt={profile.name || "Avatar"}
-          className="w-24 h-24 border-2 border-border shadow-md"
-        />
+        <div className="w-24 h-24">
+          <Image
+            src={profile.avatar || (clerkLoaded ? user?.imageUrl : undefined) || '/retro-pixel-avatar.png'}
+            alt={profile.name || "Avatar"}
+            width={96}
+            height={96}
+            className="border-2 border-border shadow-md object-cover"
+          />
+        </div>
         <div className="flex-1 text-center sm:text-left">
           <h1 className="text-3xl">{profile.name}</h1>
           <p className="text-muted-foreground">{profile.email}</p>

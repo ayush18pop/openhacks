@@ -9,7 +9,7 @@ import { Input } from "../../../components/retroui/Input";
 import { Label } from "../../../components/retroui/Label";
 import { Textarea } from "../../../components/retroui/Textarea";
 import { Text } from "../../../components/retroui/Text";
-import { UploadCloud, Image as ImageIcon, Loader2, PartyPopper } from "lucide-react";
+import { Image as ImageIcon, Loader2, PartyPopper } from "lucide-react";
 
 // --- Type Definitions ---
 type EventFormData = {
@@ -215,10 +215,12 @@ const ImageUploader = ({ label, onUpload }: { label: string, onUpload: (url: str
       let data: unknown = null;
       try {
         data = await res.json();
-      } catch (_) {
-        const text = await res.text();
-        throw new Error(text || 'Upload failed: invalid response from server');
-      }
+      } catch (err) {
+          // Log the error for debugging
+          console.error('Upload response parsing error:', err);
+          const text = await res.text();
+          throw new Error(text || 'Upload failed: invalid response from server');
+        }
 
       // Type assertion for data
       const responseData = data as {
@@ -251,9 +253,10 @@ const ImageUploader = ({ label, onUpload }: { label: string, onUpload: (url: str
         <div>
             <Label>{label}</Label>
             <div className="mt-1 h-40 border-2 border-dashed border-border flex items-center justify-center relative bg-card overflow-hidden">
-                {preview ? (
-                    <img src={preview} alt="Preview" className="h-full w-full object-cover" />
-                ) : (
+        {preview ? (
+          // eslint-disable-next-line @next/next/no-img-element -- data URL preview not supported by next/image
+          <img src={preview} alt="Preview" className="h-full w-full object-cover" />
+        ) : (
                     <div className="text-center text-muted-foreground">
                         <ImageIcon className="mx-auto h-8 w-8" />
                         <p>Click to upload</p>

@@ -4,14 +4,10 @@ import { requireAuth } from '@/src/lib/auth'; // <-- Use your custom auth functi
 import { Prisma } from '@prisma/client';
 
 // A clearer type definition for the route context
-type RouteContext = {
-  params: {
-    id: string; // Event ID
-  };
-};
+// Use the standard App Router context shape for params: { params: { id: string } }
 
 // --- POST (Register) for an Event ---
-export async function POST(request: NextRequest, context: RouteContext) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     // This function now handles auth AND user syncing
     const dbUser = await requireAuth();
@@ -19,7 +15,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const eventId = context.params.id;
+  const resolvedParams = await params;
+  const eventId = resolvedParams.id;
 
     const eventExists = await prisma.event.findUnique({ where: { id: eventId } });
     if (!eventExists) {
@@ -54,14 +51,15 @@ export async function POST(request: NextRequest, context: RouteContext) {
 }
 
 // --- DELETE (Unregister) from an Event ---
-export async function DELETE(request: NextRequest, context: RouteContext) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const dbUser = await requireAuth();
     if (!dbUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const eventId = context.params.id;
+  const resolvedParams = await params;
+  const eventId = resolvedParams.id;
 
     await prisma.registration.delete({
       where: {

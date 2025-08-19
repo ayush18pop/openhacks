@@ -39,15 +39,7 @@ const CardContent = ({ className, ...props }: ICardProps) => {
   return <div className={cn("p-4", className)} {...props} />;
 };
 
-// Combined Card object
-const CardComponent = Object.assign(Card, {
-  Header: CardHeader,
-  Title: CardTitle,
-  Description: CardDescription,
-  Content: CardContent,
-});
-
-// Export everything individually and as the combined Card object
+// Export individual components
 export {
   Card,
   CardHeader,

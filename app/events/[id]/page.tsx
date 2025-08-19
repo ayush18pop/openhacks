@@ -1,13 +1,13 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useEvent, useRegistrationStatus } from "../../../hooks/useHackathonData"; // Adjust path if needed
 
 import { Calendar, User, Trophy, BookOpen, Scale, Award, Hash, ArrowRight } from "lucide-react";
 import { Button } from "../../../components/retroui/Button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../../components/retroui/Card";
+import { Card, CardContent, CardHeader, CardTitle } from "../../../components/retroui/Card";
 import { Text } from "../../../components/retroui/Text";
 
 // --- Helper Function ---
