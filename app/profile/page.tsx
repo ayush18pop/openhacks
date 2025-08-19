@@ -1,6 +1,9 @@
 "use client";
 
-import { useState } from "react";
+
+export default function ProfilePage() {
+
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/retroui/Card";
 import { Button } from "../../components/retroui/Button";
 import { Input } from "../../components/retroui/Input";
@@ -10,131 +13,128 @@ export default function ProfilePage() {
   const [step, setStep] = useState<"role" | "questions">("role");
   const [role, setRole] = useState<"PARTICIPANT" | "ORGANISER" | "JUDGE" | null>(null);
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [profile, setProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
-  function handleRoleSelect(selected: "PARTICIPANT" | "ORGANISER" | "JUDGE") {
-    setRole(selected);
-    setStep("questions");
-  }
+  // Fetch profile on mount
+  useEffect(() => {
+    const fetchProfile = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch("/api/profile");
+        if (!res.ok) throw new Error("Failed to fetch profile");
+        const data = await res.json();
+        setProfile(data.data);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProfile();
+  }, []);
 
-  async function handleSubmit() {
-    await fetch("/api/profile", {
-      method: "POST",
-      body: JSON.stringify({ role, answers }),
-      headers: { "Content-Type": "application/json" },
-    });
-  }
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setProfile({ ...profile, [name]: value });
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const res = await fetch("/api/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(profile),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to update profile");
+      setSuccess("Profile updated successfully!");
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) return <p className="p-4">Loading...</p>;
+  if (error) return <p className="p-4 text-red-500">{error}</p>;
+  if (!profile) return null;
 
   return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center p-8">
-      <Card className="w-full max-w-lg bg-neutral-950 border-white/10 text-white">
-        <CardHeader>
-          <CardTitle>
-            {step === "role" ? "Choose your role" : `Questions for ${role}`}
-          </CardTitle>
-          <CardDescription className="text-white/70">
-            {step === "role"
-              ? "Tell us how you’re joining OpenHacks."
-              : "Fill in some details to personalise your experience."}
-          </CardDescription>
-        </CardHeader>
+    <div className="max-w-2xl mx-auto p-6 space-y-6">
+      <h1 className="text-2xl font-bold">Edit Profile</h1>
 
-        <CardContent className="space-y-6">
-          {step === "role" && (
-            <div className="grid gap-4">
-              <Button
-                variant="secondary"
-                size="lg"
-                className="w-full"
-                onClick={() => handleRoleSelect("PARTICIPANT")}
-              >
-                Join as Participant
-              </Button>
-              <Button
-                variant="secondary"
-                size="lg"
-                className="w-full"
-                onClick={() => handleRoleSelect("ORGANISER")}
-              >
-                Join as Organiser
-              </Button>
-              <Button
-                variant="secondary"
-                size="lg"
-                className="w-full"
-                onClick={() => handleRoleSelect("JUDGE")}
-              >
-                Join as Judge
-              </Button>
-            </div>
-          )}
+      {success && <p className="text-green-600">{success}</p>}
+      {error && <p className="text-red-600">{error}</p>}
 
-          {step === "questions" && (
-            <form className="grid gap-4">
-              {role === "PARTICIPANT" && (
-                <>
-                  <div className="grid gap-2">
-                    <Label>Skillset</Label>
-                    <Input
-                      placeholder="e.g. Frontend, Backend, ML"
-                      onChange={(e) => setAnswers({ ...answers, skillset: e.target.value })}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label>Preferred Track</Label>
-                    <Input
-                      placeholder="e.g. FinTech, AI, Web3"
-                      onChange={(e) => setAnswers({ ...answers, track: e.target.value })}
-                    />
-                  </div>
-                </>
-              )}
+      <div className="space-y-4">
+        <input
+          className="w-full border p-2"
+          name="name"
+          value={profile.name || ""}
+          onChange={handleChange}
+          placeholder="Name"
+        />
+        <textarea
+          className="w-full border p-2"
+          name="bio"
+          value={profile.bio || ""}
+          onChange={handleChange}
+          placeholder="Bio"
+        />
+        <input
+          className="w-full border p-2"
+          name="website"
+          value={profile.website || ""}
+          onChange={handleChange}
+          placeholder="Website"
+        />
+        <input
+          className="w-full border p-2"
+          name="github"
+          value={profile.github || ""}
+          onChange={handleChange}
+          placeholder="GitHub"
+        />
+        <input
+          className="w-full border p-2"
+          name="linkedin"
+          value={profile.linkedin || ""}
+          onChange={handleChange}
+          placeholder="LinkedIn"
+        />
+        <input
+          className="w-full border p-2"
+          name="twitter"
+          value={profile.twitter || ""}
+          onChange={handleChange}
+          placeholder="Twitter"
+        />
+        <input
+          className="w-full border p-2"
+          name="university"
+          value={profile.university || ""}
+          onChange={handleChange}
+          placeholder="University"
+        />
+        <input
+          className="w-full border p-2"
+          name="graduationYear"
+          value={profile.graduationYear || ""}
+          onChange={handleChange}
+          placeholder="Graduation Year"
+        />
+      </div>
 
-              {role === "ORGANISER" && (
-                <>
-                  <div className="grid gap-2">
-                    <Label>Organisation Name</Label>
-                    <Input
-                      placeholder="Your organisation"
-                      onChange={(e) => setAnswers({ ...answers, organisation: e.target.value })}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label>Event Idea</Label>
-                    <Input
-                      placeholder="Describe your event"
-                      onChange={(e) => setAnswers({ ...answers, eventIdea: e.target.value })}
-                    />
-                  </div>
-                </>
-              )}
-
-              {role === "JUDGE" && (
-                <>
-                  <div className="grid gap-2">
-                    <Label>Area of Expertise</Label>
-                    <Input
-                      placeholder="e.g. AI, Design, Entrepreneurship"
-                      onChange={(e) => setAnswers({ ...answers, expertise: e.target.value })}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label>Years of Experience</Label>
-                    <Input
-                      type="number"
-                      placeholder="e.g. 5"
-                      onChange={(e) => setAnswers({ ...answers, experience: e.target.value })}
-                    />
-                  </div>
-                </>
-              )}
-
-              <Button onClick={handleSubmit} className="mt-4">
-                Save Profile
-              </Button>
-            </form>
-          )}
-        </CardContent>
-      </Card>
+      <Button onClick={handleSave} disabled={saving}>
+        {saving ? "Saving..." : "Save Profile"}
+      </Button>
     </div>
   );
 }

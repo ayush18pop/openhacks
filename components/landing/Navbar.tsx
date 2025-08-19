@@ -24,11 +24,11 @@ export default function Navbar() {
           <Link href="/events">
             <Text className="hover:text-foreground transition-colors cursor-pointer">Events</Text>
           </Link>
-          <Link href="#how">
-            <Text className="hover:text-foreground transition-colors cursor-pointer">How it works</Text>
+          <Link href="/dashboard">
+            <Text className="hover:text-foreground transition-colors cursor-pointer">Dashboard</Text>
           </Link>
-          <Link href="#sponsors">
-            <Text className="hover:text-foreground transition-colors cursor-pointer">Sponsors</Text>
+          <Link href="/profile">
+            <Text className="hover:text-foreground transition-colors cursor-pointer">Profile</Text>
           </Link>
         </nav>
 

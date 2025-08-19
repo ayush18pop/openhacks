@@ -8,12 +8,12 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "shadow-md hover:shadow-none bg-primary text-black border-2 border-black transition hover:translate-y-1 hover:bg-primary-hover",
+          "shadow-md hover:shadow-none bg-yellow-400 text-black border-2 border-black transition hover:translate-y-1 hover:bg-yellow-300",
         secondary:
-          "shadow-md hover:shadow-none bg-secondary shadow-primary text-secondary-foreground border-2 border-black transition hover:translate-y-1",
+          "shadow-md hover:shadow-none bg-yellow-200 text-black border-2 border-black transition hover:translate-y-1 hover:bg-yellow-100",
         outline:
-          "shadow-md hover:shadow-none bg-transparent border-2 transition hover:translate-y-1",
-        link: "bg-transparent hover:underline",
+          "shadow-md hover:shadow-none bg-transparent border-2 border-black text-black transition hover:translate-y-1",
+        link: "bg-transparent text-yellow-400 hover:underline",
       },
       size: {
         sm: "px-3 py-1 text-sm shadow hover:shadow-none",
@@ -28,6 +28,7 @@ const buttonVariants = cva(
     },
   },
 );
+
 
 export interface IButtonProps
   extends ButtonHTMLAttributes<HTMLButtonElement>,

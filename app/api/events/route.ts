@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma'; // Assuming prisma client is in lib
-import { requireAuth } from '@/lib/auth'; // Assuming auth helper is in lib
+import { prisma } from '../../../src/lib/prisma';
+import { requireAuth } from '../../../src/lib/auth';
 import { z } from 'zod';
 
 // GET function remains the same, no changes needed here.
