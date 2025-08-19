@@ -14,9 +14,9 @@ export default function Navbar() {
       <div className="mx-auto max-w-7xl px-4 py-4 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-          <Text as="span" className="text-lg font-bold text-foreground">
+          <Text as="p" className="text-lg font-bold text-foreground">
             Open
-            <Text as="span" className="text-primary">
+            <Text as="p" className="text-primary">
               Hacks
             </Text>
           </Text>
