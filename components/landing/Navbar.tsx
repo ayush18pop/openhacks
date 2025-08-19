@@ -14,9 +14,9 @@ export default function Navbar() {
       <div className="mx-auto max-w-7xl px-4 py-4 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-          <Text as="p" className="text-lg font-bold text-foreground">
+          <Text as="span" className="text-lg font-bold text-foreground">
             Open
-            <Text as="p" className="text-primary">
+            <Text as="span" className="text-primary">
               Hacks
             </Text>
           </Text>
@@ -27,11 +27,11 @@ export default function Navbar() {
           <Link href="/events">
             <Text className="hover:text-foreground transition-colors cursor-pointer">Events</Text>
           </Link>
-          <Link href="#how">
-            <Text className="hover:text-foreground transition-colors cursor-pointer">How it works</Text>
+          <Link href="/dashboard">
+            <Text className="hover:text-foreground transition-colors cursor-pointer">Dashboard</Text>
           </Link>
-          <Link href="#sponsors">
-            <Text className="hover:text-foreground transition-colors cursor-pointer">Sponsors</Text>
+          <Link href="/profile">
+            <Text className="hover:text-foreground transition-colors cursor-pointer">Profile</Text>
           </Link>
         </nav>
 

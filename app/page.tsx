@@ -26,9 +26,6 @@ export default function Home() {
         />
         <div className="relative z-10">
           <div className="mb-6">
-            <Navbar />
-          </div>
-          <div className="mb-6">
             <Hero />
           </div>
           <div className="mx-auto max-w-7xl px-4">
