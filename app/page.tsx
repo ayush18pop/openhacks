@@ -9,7 +9,6 @@ import Footer from "../components/landing/Footer";
 import {BoxesCore} from "../components/landing/Background";
 import BackgroundWords from "../components/landing/BackgroundWords";
 
-
 export const dynamic = "force-dynamic";
 
 export default function Home() {
