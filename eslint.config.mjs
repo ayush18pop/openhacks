@@ -13,4 +13,10 @@ const eslintConfig = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
 ];
 
-export default eslintConfig;
+// Exclude generated and dependency folders from linting
+const finalConfig = [
+  { ignores: [".next/**", "node_modules/**", "dist/**", "build/**"] },
+  ...eslintConfig,
+];
+
+export default finalConfig;

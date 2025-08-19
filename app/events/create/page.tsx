@@ -23,6 +23,7 @@ type EventFormData = {
   prizes: string;
   thumbnail: string;
   banner: string;
+  tracksJson?: string; // tracksJson: user-entered JSON array or newline-separated tracks
 };
 
 // --- API Mutation Hook ---
@@ -80,10 +81,31 @@ export default function CreateEventPage() {
     }
 
     // --- FIX: Convert dates to ISO strings before sending ---
+    // Normalize tracks: allow user to paste JSON array or newline-separated list
+    let tracks: string | string[] | undefined = undefined;
+    if (formData.tracksJson) {
+      const raw = formData.tracksJson as string;
+      // try parse JSON
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) tracks = parsed;
+        else tracks = raw;
+      } catch {
+        // not JSON - split by newline if it contains newlines
+        if (raw.includes('\n')) {
+          tracks = raw.split('\n').map(s => s.trim()).filter(Boolean);
+        } else {
+          tracks = raw;
+        }
+      }
+    }
+
     const payload = {
         ...formData,
         startAt: new Date(formData.startAt).toISOString(),
         endAt: new Date(formData.endAt).toISOString(),
+        // include tracks as either array or string (API will stringify if needed)
+        tracks: tracks,
     };
 
     createEvent.mutate(payload, {
@@ -139,6 +161,17 @@ export default function CreateEventPage() {
               <Section title="Additional Information">
                 <FormField label="Rules / Code of Conduct" name="rules" value={formData.rules} onChange={handleChange} type="textarea" placeholder="Outline the guidelines for participants." />
                 <FormField label="Prizes" name="prizes" value={formData.prizes} onChange={handleChange} type="textarea" placeholder="e.g., 1st Place: $5000, 2nd Place: Swag Pack" />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Tracks</label>
+                  <p className="text-xs text-gray-500 mb-2">Enter tracks as a JSON array (e.g. [&quot;AI&quot;, &quot;Web&quot;]) or one-per-line.</p>
+                  <textarea
+                    value={formData.tracksJson || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, tracksJson: e.target.value }))}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    rows={4}
+                    placeholder={'e.g. ["AI", "Web"] or\nAI\nWeb'}
+                  />
+                </div>
               </Section>
 
               {/* Submission */}

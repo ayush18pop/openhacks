@@ -55,8 +55,10 @@ export const useCreateTeam = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: createTeam,
-    onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: teamKeys.list(variables.eventId) });
+    onSuccess: (data, variables) => {
+      // variables contains the input: { eventId, name }
+      const typedVars = variables as { eventId: string; name?: string };
+      queryClient.invalidateQueries({ queryKey: teamKeys.list(typedVars.eventId) });
     },
   });
 };
@@ -65,7 +67,7 @@ export const useAddMember = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: addMember,
-    onSuccess: (_data, variables) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: teamKeys.list() });
     },
   });
@@ -75,7 +77,7 @@ export const useRemoveMember = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: removeMember,
-    onSuccess: (_data, variables) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: teamKeys.list() });
     },
   });

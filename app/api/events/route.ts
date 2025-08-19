@@ -62,6 +62,8 @@ const createEventSchema = z.object({
     theme: z.string().optional(),
     rules: z.string().optional(),
     prizes: z.string().optional(),
+  // tracks can be provided as an array of strings or a raw string (JSON or newline-separated)
+  tracks: z.union([z.array(z.string()), z.string()]).optional(),
     // Add thumbnail and banner fields, validated as URLs
     thumbnail: z.string().url().optional().nullable(),
     banner: z.string().url().optional().nullable(),
@@ -88,15 +90,44 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // The validated data now includes thumbnail and banner
-    const eventData = validation.data;
+    // The validated data now includes thumbnail, banner and optional tracks
+    const eventData = validation.data as z.infer<typeof createEventSchema>;
+
+    // Normalize tracks into JSON string for tracksJson DB column
+    let tracksJson: string | undefined = undefined;
+    if (eventData.tracks !== undefined) {
+      const t = eventData.tracks;
+      if (Array.isArray(t)) {
+        tracksJson = JSON.stringify(t);
+      } else if (typeof t === 'string') {
+        try {
+          const parsed = JSON.parse(t);
+          if (Array.isArray(parsed)) tracksJson = JSON.stringify(parsed);
+          else {
+            const parts = t.split(/\r?\n|,/).map(s => s.trim()).filter(Boolean);
+            tracksJson = JSON.stringify(parts);
+          }
+        } catch {
+          const parts = t.split(/\r?\n|,/).map(s => s.trim()).filter(Boolean);
+          tracksJson = JSON.stringify(parts);
+        }
+      }
+    }
 
     const newEvent = await prisma.event.create({
       data: {
-        ...eventData,
+        title: eventData.title,
+        description: eventData.description,
+        mode: eventData.mode,
         startAt: new Date(eventData.startAt),
         endAt: new Date(eventData.endAt),
+        theme: eventData.theme,
+        rules: eventData.rules,
+        prizes: eventData.prizes,
+        thumbnail: eventData.thumbnail,
+        banner: eventData.banner,
         organizerId: user.id,
+        ...(tracksJson ? { tracksJson } : {}),
       },
     });
 
