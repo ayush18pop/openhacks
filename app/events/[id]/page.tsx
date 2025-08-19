@@ -40,6 +40,9 @@ export default function EventDetailPage() {
     theme?: string;
     mode: string;
     organizer: { name: string };
+  tracksJson?: string | null;
+  timeline?: string | null;
+  organizersJson?: string | null;
   }
 
   const event = (eventResponse as { data?: Event })?.data;
@@ -82,6 +85,60 @@ export default function EventDetailPage() {
               <section className="card p-6">
                 <h2 className="text-2xl mb-4 flex items-center"><Scale className="w-6 h-6 mr-3 text-[var(--primary)]" />Rules</h2>
                 <Text className="text-muted-foreground whitespace-pre-wrap">{event.rules}</Text>
+              </section>
+            )}
+
+            {/* Tracks */}
+            {event.tracksJson && (
+              <section className="card p-6">
+                <h2 className="text-2xl mb-4 flex items-center"><Hash className="w-6 h-6 mr-3 text-[var(--primary)]" />Tracks</h2>
+                <div className="flex gap-2 flex-wrap">
+                  {(() => {
+                    try {
+                      const arr = JSON.parse(event.tracksJson as string);
+                      if (Array.isArray(arr)) return arr.map((t: string) => <span key={t} className="bg-gray-100 px-3 py-1 rounded-full">{t}</span>);
+                    } catch {
+                      return (event.tracksJson || '').split(/\r?\n|,/).map(s => s.trim()).filter(Boolean).map((t, i) => <span key={i} className="bg-gray-100 px-3 py-1 rounded-full">{t}</span>);
+                    }
+                    return null;
+                  })()}
+                </div>
+              </section>
+            )}
+
+            {/* Timeline */}
+            {event.timeline && (
+              <section className="card p-6">
+                <h2 className="text-2xl mb-4 flex items-center"><Calendar className="w-6 h-6 mr-3 text-[var(--primary)]" />Timeline</h2>
+                <ol className="list-decimal list-inside space-y-2 text-muted-foreground">
+                  {(() => {
+                    try {
+                      const arr = JSON.parse(event.timeline as string);
+                      if (Array.isArray(arr)) return arr.map((t: string, i: number) => <li key={i}>{t}</li>);
+                    } catch {
+                      return (event.timeline || '').split(/\r?\n/).map((s: string, i: number) => <li key={i}>{s}</li>);
+                    }
+                    return null;
+                  })()}
+                </ol>
+              </section>
+            )}
+
+            {/* Co-organizers */}
+            {event.organizersJson && (
+              <section className="card p-6">
+                <h2 className="text-2xl mb-4 flex items-center"><User className="w-6 h-6 mr-3 text-[var(--primary)]" />Co-organizers</h2>
+                <div className="flex gap-2 flex-wrap">
+                  {(() => {
+                    try {
+                      const arr = JSON.parse(event.organizersJson as string);
+                      if (Array.isArray(arr)) return arr.map((o: string) => <span key={o} className="bg-gray-100 px-3 py-1 rounded-full">{o}</span>);
+                    } catch {
+                      return (event.organizersJson || '').split(/\r?\n|,/).map(s => s.trim()).filter(Boolean).map((o, i) => <span key={i} className="bg-gray-100 px-3 py-1 rounded-full">{o}</span>);
+                    }
+                    return null;
+                  })()}
+                </div>
               </section>
             )}
 

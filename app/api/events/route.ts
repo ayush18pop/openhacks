@@ -62,6 +62,10 @@ const createEventSchema = z.object({
     theme: z.string().optional(),
     rules: z.string().optional(),
     prizes: z.string().optional(),
+  // timeline can be an array of strings or raw string
+  timeline: z.union([z.array(z.string()), z.string()]).optional(),
+  // organizers can be supplied as array of emails/ids or raw string
+  organizers: z.union([z.array(z.string()), z.string()]).optional(),
   // tracks can be provided as an array of strings or a raw string (JSON or newline-separated)
   tracks: z.union([z.array(z.string()), z.string()]).optional(),
     // Add thumbnail and banner fields, validated as URLs
@@ -114,6 +118,46 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Normalize timeline into JSON string for timeline DB column
+    let timelineJson: string | undefined = undefined;
+    if (eventData.timeline !== undefined) {
+      const t = eventData.timeline;
+      if (Array.isArray(t)) timelineJson = JSON.stringify(t);
+      else if (typeof t === 'string') {
+        try {
+          const parsed = JSON.parse(t);
+          if (Array.isArray(parsed)) timelineJson = JSON.stringify(parsed);
+          else {
+            const parts = t.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+            timelineJson = JSON.stringify(parts);
+          }
+        } catch {
+          const parts = t.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+          timelineJson = JSON.stringify(parts);
+        }
+      }
+    }
+
+    // Normalize organizers into JSON string for organizersJson DB column
+    let organizersJson: string | undefined = undefined;
+    if (eventData.organizers !== undefined) {
+      const o = eventData.organizers;
+      if (Array.isArray(o)) organizersJson = JSON.stringify(o);
+      else if (typeof o === 'string') {
+        try {
+          const parsed = JSON.parse(o);
+          if (Array.isArray(parsed)) organizersJson = JSON.stringify(parsed);
+          else {
+            const parts = o.split(/\r?\n|,/).map(s => s.trim()).filter(Boolean);
+            organizersJson = JSON.stringify(parts);
+          }
+        } catch {
+          const parts = o.split(/\r?\n|,/).map(s => s.trim()).filter(Boolean);
+          organizersJson = JSON.stringify(parts);
+        }
+      }
+    }
+
     const newEvent = await prisma.event.create({
       data: {
         title: eventData.title,
@@ -128,6 +172,8 @@ export async function POST(request: NextRequest) {
         banner: eventData.banner,
         organizerId: user.id,
         ...(tracksJson ? { tracksJson } : {}),
+  ...(timelineJson ? { timeline: timelineJson } : {}),
+  ...(organizersJson ? { organizersJson } : {}),
       },
     });
 

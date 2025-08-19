@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/src/lib/prisma';
-import { requireAuth } from '@/src/lib/auth'; // <-- Use your custom auth function
+import { prisma } from '../../../../../src/lib/prisma'; // Adjust the import path as needed
+import { requireAuth } from '../../../../../src/lib/auth'; // <-- Use your custom auth function
 import { Prisma } from '@prisma/client';
 
 // A clearer type definition for the route context

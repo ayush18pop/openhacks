@@ -24,6 +24,9 @@ type EventFormData = {
   thumbnail: string;
   banner: string;
   tracksJson?: string; // tracksJson: user-entered JSON array or newline-separated tracks
+  tracks?: string[] | string;
+  timelineJson?: string; // timeline entries JSON or newline-separated
+  organizersJson?: string; // co-organizers (emails or ids) JSON or newline-separated
 };
 
 // --- API Mutation Hook ---
@@ -58,12 +61,48 @@ export default function CreateEventPage() {
   const [formData, setFormData] = useState<Partial<EventFormData>>({
     mode: 'ONLINE',
   });
+  const [trackInput, setTrackInput] = useState('');
+  const [organizerSearch, setOrganizerSearch] = useState('');
   const [error, setError] = useState<string | null>(null);
   
   const createEvent = useCreateEvent();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const addTrack = (t: string) => {
+    const trimmed = t.trim();
+    if (!trimmed) return;
+    setFormData(prev => {
+      const existing = Array.isArray(prev.tracks) ? prev.tracks : typeof prev.tracks === 'string' && prev.tracks ? [prev.tracks] : [];
+      return { ...prev, tracks: Array.from(new Set([...existing, trimmed])) };
+    });
+    setTrackInput('');
+  };
+
+  const removeTrack = (t: string) => {
+    setFormData(prev => {
+      const existing = Array.isArray(prev.tracks) ? prev.tracks : typeof prev.tracks === 'string' && prev.tracks ? [prev.tracks] : [];
+      return { ...prev, tracks: existing.filter(x => x !== t) };
+    });
+  };
+
+  const addOrganizer = (o: string) => {
+    const trimmed = o.trim();
+    if (!trimmed) return;
+    setFormData(prev => ({ ...prev, organizersJson: JSON.stringify(Array.from(new Set([...(prev.organizersJson ? JSON.parse(prev.organizersJson as string) : []), trimmed]))) }));
+    setOrganizerSearch('');
+  };
+
+  const removeOrganizer = (o: string) => {
+    try {
+      const list = formData.organizersJson ? JSON.parse(formData.organizersJson as string) : [];
+      const updated = list.filter((x: string) => x !== o);
+      setFormData(prev => ({ ...prev, organizersJson: JSON.stringify(updated) }));
+    } catch {
+      // ignore
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -81,22 +120,19 @@ export default function CreateEventPage() {
     }
 
     // --- FIX: Convert dates to ISO strings before sending ---
-    // Normalize tracks: allow user to paste JSON array or newline-separated list
+    // Prefer explicit tracks array from the chips editor; fallback to tracksJson
     let tracks: string | string[] | undefined = undefined;
-    if (formData.tracksJson) {
+    if (formData.tracks && Array.isArray(formData.tracks)) {
+      tracks = formData.tracks;
+    } else if (formData.tracksJson) {
       const raw = formData.tracksJson as string;
-      // try parse JSON
       try {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed)) tracks = parsed;
         else tracks = raw;
       } catch {
-        // not JSON - split by newline if it contains newlines
-        if (raw.includes('\n')) {
-          tracks = raw.split('\n').map(s => s.trim()).filter(Boolean);
-        } else {
-          tracks = raw;
-        }
+        if (raw.includes('\n')) tracks = raw.split('\n').map(s => s.trim()).filter(Boolean);
+        else tracks = raw.split(',').map(s => s.trim()).filter(Boolean);
       }
     }
 
@@ -105,7 +141,7 @@ export default function CreateEventPage() {
         startAt: new Date(formData.startAt).toISOString(),
         endAt: new Date(formData.endAt).toISOString(),
         // include tracks as either array or string (API will stringify if needed)
-        tracks: tracks,
+  tracks: tracks,
     };
 
     createEvent.mutate(payload, {
@@ -163,14 +199,56 @@ export default function CreateEventPage() {
                 <FormField label="Prizes" name="prizes" value={formData.prizes} onChange={handleChange} type="textarea" placeholder="e.g., 1st Place: $5000, 2nd Place: Swag Pack" />
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Tracks</label>
-                  <p className="text-xs text-gray-500 mb-2">Enter tracks as a JSON array (e.g. [&quot;AI&quot;, &quot;Web&quot;]) or one-per-line.</p>
+                  <p className="text-xs text-gray-500 mb-2">Add tracks and press Enter or click Add.</p>
+                  <div className="flex gap-2 flex-wrap">
+                    {(Array.isArray(formData.tracks) ? formData.tracks : []).map((t) => (
+                      <span key={t} className="bg-gray-100 text-sm px-3 py-1 rounded-full flex items-center gap-2">
+                        {t}
+                        <button type="button" onClick={() => removeTrack(t)} className="text-red-500">×</button>
+                      </span>
+                    ))}
+                  </div>
+                  <div className="mt-2 flex gap-2">
+                    <Input value={trackInput} onChange={(e) => setTrackInput(e.target.value)} placeholder="New track" />
+                    <Button type="button" onClick={() => addTrack(trackInput)}>Add</Button>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-2">Or paste JSON/newline list into the textarea below.</p>
                   <textarea
                     value={formData.tracksJson || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, tracksJson: e.target.value }))}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                    rows={4}
+                    rows={3}
                     placeholder={'e.g. ["AI", "Web"] or\nAI\nWeb'}
                   />
+                </div>
+
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700">Timeline</label>
+                  <p className="text-xs text-gray-500 mb-2">Enter timeline as a JSON array of strings (e.g. [&quot;Day 1: Registration&quot;, &quot;Day 2: Finals&quot;]) or one-per-line.</p>
+                  <textarea
+                    value={formData.timelineJson || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, timelineJson: e.target.value }))}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    rows={4}
+                    placeholder={'e.g. ["Day 1: Registration", "Day 2: Finals"] or\nDay 1: Registration\nDay 2: Finals'}
+                  />
+                </div>
+
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700">Co-organizers</label>
+                  <p className="text-xs text-gray-500 mb-2">Search a user by email and add them as co-organizers.</p>
+                  <div className="flex gap-2">
+                    <Input value={organizerSearch} onChange={(e) => setOrganizerSearch(e.target.value)} placeholder="email@example.com" />
+                    <Button type="button" onClick={() => addOrganizer(organizerSearch)}>Add</Button>
+                  </div>
+                  <div className="mt-2 flex gap-2 flex-wrap">
+                    {(formData.organizersJson ? JSON.parse(formData.organizersJson as string) : []).map((o: string) => (
+                      <span key={o} className="bg-gray-100 text-sm px-3 py-1 rounded-full flex items-center gap-2">
+                        {o}
+                        <button type="button" onClick={() => removeOrganizer(o)} className="text-red-500">×</button>
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </Section>
 

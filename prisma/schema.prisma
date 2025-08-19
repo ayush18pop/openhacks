@@ -36,28 +36,29 @@ model User {
 }
 
 model Event {
-    id            String         @id @default(cuid())
-    title         String
-    description   String
-    theme         String?
-    tracksJson    String?
-    mode          String         @default("ONLINE")
-    rules         String?
-    timeline      String?
-    prizes        String?
-    sponsors      String?
-    startAt       DateTime
-    endAt         DateTime
-    organizerId   String
-    organizer     User           @relation("EventOrganizer", fields: [organizerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-    judges        User[]         @relation("EventJudges")
-    teams         Team[]
-    registrations Registration[]
-    rounds        Round[]
-    createdAt     DateTime       @default(now())
-    updatedAt     DateTime       @updatedAt
-    thumbnail     String?
-    banner        String?
+    id             String         @id @default(cuid())
+    title          String
+    description    String
+    theme          String?
+    tracksJson     String?
+    mode           String         @default("ONLINE")
+    rules          String?
+    timeline       String?
+    prizes         String?
+    sponsors       String?
+    organizersJson String?
+    startAt        DateTime
+    endAt          DateTime
+    organizerId    String
+    organizer      User           @relation("EventOrganizer", fields: [organizerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+    judges         User[]         @relation("EventJudges")
+    teams          Team[]
+    registrations  Registration[]
+    rounds         Round[]
+    createdAt      DateTime       @default(now())
+    updatedAt      DateTime       @updatedAt
+    thumbnail      String?
+    banner         String?
 }
 
 model Team {
