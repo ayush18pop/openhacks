@@ -1,10 +1,40 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 
+class ApiError extends Error {
+  status: number;
+  data: unknown;
+  constructor(message: string, status = 500, data: unknown = null) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.data = data;
+  }
+}
+
+const parseJsonSafe = async (res: Response): Promise<unknown | null> => {
+  try {
+    return await res.json();
+  } catch {
+    return null;
+  }
+};
+
+const extractMessage = (body: unknown) => {
+  if (!body || typeof body !== 'object') return null;
+  const b = body as Record<string, unknown>;
+  if (typeof b.error === 'string') return b.error;
+  if (typeof b.message === 'string') return b.message;
+  return null;
+};
+
 const fetcher = async (url: string) => {
   const res = await fetch(url);
-  const body = await res.json();
-  if (!res.ok) throw new Error(body?.error || 'An error occurred');
+  const body = await parseJsonSafe(res);
+  if (!res.ok) {
+    const msg = extractMessage(body) || res.statusText || 'An error occurred';
+    throw new ApiError(msg, res.status, body);
+  }
   return body;
 };
 
@@ -14,8 +44,11 @@ const poster = async (url: string, data: unknown) => {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
-  const body = await res.json();
-  if (!res.ok) throw new Error(body?.error || 'An error occurred');
+  const body = await parseJsonSafe(res);
+  if (!res.ok) {
+    const msg = extractMessage(body) || res.statusText || 'An error occurred';
+    throw new ApiError(msg, res.status, body);
+  }
   return body;
 };
 
@@ -25,8 +58,11 @@ const deleter = async (url: string, data: unknown) => {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
-  const body = await res.json();
-  if (!res.ok) throw new Error(body?.error || 'An error occurred');
+  const body = await parseJsonSafe(res);
+  if (!res.ok) {
+    const msg = extractMessage(body) || res.statusText || 'An error occurred';
+    throw new ApiError(msg, res.status, body);
+  }
   return body;
 };
 

@@ -5,11 +5,12 @@ import { Badge } from "../../components/retroui/Badge";
 
 export default function Hero() {
   return (
-    <section className="px-6 py-20">
-      <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-10">
-        <div>
-          <h1 className="text-4xl font-bold text-foreground">
-            Host. Build. <span className="text-primary">Ship</span> faster.
+    <>
+      <section className="px-6 py-20">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-10">
+          <div>
+            <h1 className="text-4xl font-bold text-foreground">
+              Host. Build. <span className="text-primary">Ship</span> faster.
           </h1>
           <p className="mt-4 text-muted-foreground">
             Create events, manage teams, accept submissions, and run judging — all in one platform.
@@ -19,7 +20,7 @@ export default function Hero() {
             <Link href="/events">
               <Button>Browse events</Button>
             </Link>
-            <Link href="/signup">
+            <Link href="/events/create">
               <Button variant="secondary">Create event</Button>
             </Link>
           </div>
@@ -45,5 +46,6 @@ export default function Hero() {
         </div>
       </div>
     </section>
+    </>
   );
 }

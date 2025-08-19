@@ -12,7 +12,10 @@ export default function MyTeams({ eventId }) {
   const [teamName, setTeamName] = useState('');
   const [inviteEmails, setInviteEmails] = useState<{ [key: string]: string }>({});
   
-  const { data: teamsData, isLoading: teamsLoading } = useTeams(eventId);
+  const { data: teamsData, isLoading: teamsLoading } = useTeams(eventId) as {
+    data: { data: Array<{ id: string; name: string; owner: { name: string }; members: Array<{ id: string; name: string }> }> };
+    isLoading: boolean;
+  };
   const createTeam = useCreateTeam();
   // Note: createInvite hook needs teamId, so it's called inside the map
   
@@ -54,7 +57,7 @@ export default function MyTeams({ eventId }) {
 
       {teamsLoading && <p>Loading your teams...</p>}
       
-      {teamsData?.data.map((team) => (
+      {teamsData.data.map((team) => (
         <Card key={team.id}>
             <CardHeader>
                 <CardTitle style={{ textShadow: 'none' }}>{team.name}</CardTitle>

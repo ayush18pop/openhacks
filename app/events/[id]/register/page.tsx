@@ -21,25 +21,12 @@ import { Users, Plus, Mail, Trash2, Check, X } from "lucide-react";
 import { Button } from "../../../../components/retroui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../../components/retroui/Card";
 import { Input } from "../../../../components/retroui/Input";
+import { useToast } from "../../../../components/retroui/Toast";
 
 type Event = { id: string; title: string; rules?: string | null; startAt: string; endAt: string; };
 type Team = { id: string; name: string; ownerId: string; members: { id: string; name: string | null }[] };
 type Invite = { id: string; team: { name: string } };
-
-function Toast({ message, type, onClose }: { message: string; type: 'success' | 'error' | 'info'; onClose: () => void }) {
-  return (
-    <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-md text-white ${
-      type === 'success' ? 'bg-green-600' : type === 'error' ? 'bg-red-600' : 'bg-blue-600'
-    }`}>
-      <div className="flex items-center gap-3">
-        <span>{message}</span>
-        <button onClick={onClose} className="hover:opacity-70">
-          <X className="w-4 h-4" />
-        </button>
-      </div>
-    </div>
-  );
-}
+type ApiResponse = { success?: boolean; data?: unknown; message?: string; error?: string };
 
 export default function RegistrationPage() {
   const params = useParams();
@@ -49,7 +36,7 @@ export default function RegistrationPage() {
   const [agreed, setAgreed] = useState(false);
   const [teamName, setTeamName] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const { toast } = useToast();
 
   const { data: eventData, isLoading: eventLoading, error: eventError } = useEvent(eventId);
   const { data: regStatus, isLoading: regLoading } = useRegistrationStatus(eventId);
@@ -61,8 +48,8 @@ export default function RegistrationPage() {
   const respondInviteMutation = useRespondToInvite();
 
   const showToast = (message: string, type: 'success' | 'error' | 'info') => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 4000);
+    const variant: 'default' | 'destructive' | 'success' = type === 'success' ? 'success' : type === 'error' ? 'destructive' : 'default';
+    toast({ title: type === 'success' ? 'Success' : type === 'error' ? 'Error' : 'Info', description: message, variant });
   };
 
   const handleRegister = () => {
@@ -98,10 +85,10 @@ export default function RegistrationPage() {
     });
   };
 
-  const event: Event | undefined = eventData?.data;
-  const isRegistered: boolean = regStatus?.isRegistered;
-  const teams: Team[] = teamsData?.data || [];
-  const invites: Invite[] = invitesData?.data || [];
+  const event: Event | undefined = (eventData as { data?: Event })?.data;
+  const isRegistered: boolean = (regStatus as { isRegistered?: boolean })?.isRegistered ?? false;
+  const teams: Team[] = (teamsData as { data?: Team[] })?.data || [];
+  const invites: Invite[] = (invitesData as { data?: Invite[] })?.data || [];
   const isLoading = eventLoading || regLoading;
 
   if (isLoading) {
@@ -125,13 +112,7 @@ export default function RegistrationPage() {
 
   return (
     <>
-      {toast && (
-        <Toast 
-          message={toast.message} 
-          type={toast.type} 
-          onClose={() => setToast(null)} 
-        />
-      )}
+  {/* retroui ToastProvider renders toasts globally; no local toast UI needed here */}
       
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-4xl mx-auto px-4 py-8">
@@ -344,11 +325,24 @@ function TeamCard({
       const result = await findUserByEmail(inviteEmail);
       if (result.success && result.data?.id) {
         createInviteMutation.mutate({ teamId: team.id, inviteeId: result.data.id }, {
-          onSuccess: () => {
+          onSuccess: (res) => {
+            const api = res as ApiResponse;
+            const msg = api?.message || (api?.success ? 'Invite processed.' : 'Invite sent.');
+            onToast(msg, 'success');
             setInviteEmail('');
-            onToast("Invite sent!", "success");
           },
-          onError: () => onToast("Failed to send invite.", "error")
+          onError: (err) => {
+            const unknownErr = err as unknown;
+            let msg = 'Failed to send invite.';
+            if (unknownErr instanceof Error) {
+              msg = unknownErr.message;
+            } else if (typeof unknownErr === 'object' && unknownErr !== null) {
+              const obj = unknownErr as { message?: string; error?: string };
+              if (obj.message) msg = obj.message;
+              else if (typeof obj.error === 'string') msg = obj.error;
+            }
+            onToast(msg, 'error');
+          }
         });
       } else {
         onToast("No user found with that email.", "error");
