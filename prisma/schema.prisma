@@ -1,17 +1,49 @@
+// OpenHacks - Role-Based Hackathon Platform
+// Three distinct user types:
+// 1. PARTICIPANT - Hackers/Students who join hackathons
+// 2. JUDGE - Industry experts who evaluate submissions  
+// 3. ORGANIZER - People who create and manage events
+
 generator client {
     provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "sqlserver"
-    url      = env("DATABASE_URL")
+    // provider = "sqlserver"
+    // url      = env("DATABASE_URL")
+    provider = "sqlite"
+    url      = "file:./dev.db"
 }
 
 model User {
-    id            String         @id // Clerk user id
-    email         String         @unique
-    name          String?
-    role          String         @default("PARTICIPANT")
+    id     String  @id // Clerk user id
+    email  String  @unique
+    name   String?
+    bio    String?
+    avatar String?
+    role   String  @default("PARTICIPANT") // PARTICIPANT, JUDGE, ORGANIZER
+
+    // Common fields
+    website  String?
+    github   String?
+    linkedin String?
+    twitter  String?
+
+    // Participant-specific fields
+    skills         String? // JSON array of skills for participants
+    university     String? // University/School for participants
+    graduationYear Int? // Graduation year for participants
+
+    // Judge-specific fields
+    expertise  String? // Areas of expertise for judges
+    company    String? // Company/Organization for judges and organizers
+    position   String? // Job title for judges and organizers
+    yearsOfExp Int? // Years of experience for judges
+
+    // Organizer-specific fields
+    organization String? // Organization name for organizers
+
+    // Relations
     memberOfTeams Team[]         @relation("Members")
     ownedTeams    Team[]         @relation("Owner")
     registrations Registration[] @relation("UserRegistrations")
@@ -64,7 +96,6 @@ model Registration {
     user      User     @relation("UserRegistrations", fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
     teamId    String?
     team      Team?    @relation("TeamRegistrations", fields: [teamId], references: [id], onDelete: SetNull, onUpdate: NoAction)
-    role      String   @default("PARTICIPANT")
     createdAt DateTime @default(now())
 
     // Compound unique to ensure a user registers only once per event
