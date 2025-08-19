@@ -1,9 +1,3 @@
-// OpenHacks - Event-Based Authorization Platform
-// Authorization is now event-specific:
-// - Any user can organize events (create Event records)
-// - Event organizers assign judges per event via many-to-many relation
-// - All other users are participants by default
-
 generator client {
     provider = "prisma-client-js"
 }
@@ -20,16 +14,14 @@ model User {
     bio    String?
     avatar String?
 
-    // Common fields for all users
     website        String?
     github         String?
     linkedin       String?
     twitter        String?
-    skills         String? // JSON array of skills
-    university     String? // University/School
-    graduationYear Int? // Graduation year
+    skills         String?
+    university     String?
+    graduationYear Int?
 
-    // Relations
     memberOfTeams   Team[]         @relation("Members")
     ownedTeams      Team[]         @relation("Owner")
     registrations   Registration[] @relation("UserRegistrations")
@@ -61,6 +53,8 @@ model Event {
     rounds        Round[]
     createdAt     DateTime       @default(now())
     updatedAt     DateTime       @updatedAt
+    thumbnail     String?
+    banner        String?
 }
 
 model Team {
@@ -86,7 +80,6 @@ model Registration {
     team      Team?    @relation("TeamRegistrations", fields: [teamId], references: [id], onDelete: SetNull, onUpdate: NoAction)
     createdAt DateTime @default(now())
 
-    // Compound unique to ensure a user registers only once per event
     @@unique([eventId, userId])
 }
 

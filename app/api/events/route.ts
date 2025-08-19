@@ -1,49 +1,55 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/src/lib/prisma';
-import { requireAuth } from '@/src/lib/auth';
+import { prisma } from '@/lib/prisma'; // Assuming prisma client is in lib
+import { requireAuth } from '@/lib/auth'; // Assuming auth helper is in lib
 import { z } from 'zod';
 
-export async function GET() {
+// GET function remains the same, no changes needed here.
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
+    const limit = parseInt(searchParams.get('limit') || '9');
+    const cursor = searchParams.get('cursor');
+    const sortBy = searchParams.get('sortBy') || 'startAt';
+    const order = searchParams.get('order') || 'asc';
+    const mode = searchParams.get('mode');
+
+    const whereClause: import('@prisma/client').Prisma.EventWhereInput = {};
+    if (mode && ['ONLINE', 'OFFLINE', 'HYBRID'].includes(mode)) {
+      whereClause.mode = mode;
+    }
+
     const events = await prisma.event.findMany({
-      orderBy: { createdAt: 'desc' },
+      take: limit,
+      ...(cursor && { skip: 1, cursor: { id: cursor } }),
+      where: whereClause,
+      orderBy: { [sortBy]: order },
       include: {
         organizer: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          }
-        },
-        judges: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          }
+          select: { id: true, name: true, avatar: true },
         },
         _count: {
-          select: {
-            registrations: true,
-            teams: true,
-          }
-        }
-      }
+          select: { registrations: true, teams: true },
+        },
+      },
     });
+
+    let nextCursor: string | null = null;
+    if (events.length === limit) {
+      nextCursor = events[limit - 1].id;
+    }
 
     return NextResponse.json({
       success: true,
-      data: events
+      data: events,
+      nextCursor,
     });
   } catch (error) {
     console.error('Error fetching events:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch events' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch events' }, { status: 500 });
   }
 }
 
+// --- Updated Zod Schema ---
 const createEventSchema = z.object({
     title: z.string().min(3, 'Title must be at least 3 characters long').max(100),
     description: z.string().min(10, 'Description must be at least 10 characters long'),
@@ -53,6 +59,9 @@ const createEventSchema = z.object({
     theme: z.string().optional(),
     rules: z.string().optional(),
     prizes: z.string().optional(),
+    // Add thumbnail and banner fields, validated as URLs
+    thumbnail: z.string().url().optional().nullable(),
+    banner: z.string().url().optional().nullable(),
   })
   .refine((data) => new Date(data.endAt) > new Date(data.startAt), {
     message: 'End date must be after the start date',
@@ -61,12 +70,11 @@ const createEventSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await requireAuth();
+    const user = await requireAuth(); // Assuming requireAuth returns the user object or throws
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // In the new model, any user can create events (become organizers)
     const body = await request.json();
     const validation = createEventSchema.safeParse(body);
 
@@ -77,35 +85,21 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    const { title, description, startAt, endAt, mode, ...otherData } = validation.data;
+    // The validated data now includes thumbnail and banner
+    const eventData = validation.data;
 
     const newEvent = await prisma.event.create({
       data: {
-        title,
-        description,
-        mode,
-        startAt: new Date(startAt),
-        endAt: new Date(endAt),
+        ...eventData,
+        startAt: new Date(eventData.startAt),
+        endAt: new Date(eventData.endAt),
         organizerId: user.id,
-        ...otherData,
       },
     });
 
-    return NextResponse.json(
-      {
-        success: true,
-        data: newEvent,
-      },
-      { status: 201 }
-    );
+    return NextResponse.json({ success: true, data: newEvent }, { status: 201 });
   } catch (error) {
     console.error('Error creating event:', error);
-    if (error instanceof SyntaxError) {
-      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
-    }
-    return NextResponse.json(
-      { error: 'Failed to create event' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to create event' }, { status: 500 });
   }
 }

@@ -3,6 +3,10 @@
 import Link from "next/link";
 import { Button } from "../../components/retroui/Button";
 import { Text } from "../../components/retroui/Text";
+import { SignInButton } from "@clerk/nextjs";
+import { SignOutButton } from "@clerk/nextjs";
+import { SignedIn } from "@clerk/nextjs";
+import { SignedOut } from "@clerk/nextjs";
 
 export default function Navbar() {
   return (
@@ -33,12 +37,17 @@ export default function Navbar() {
 
         {/* Buttons */}
         <div className="flex items-center gap-3">
-          <Link href="/login">
+          <SignedOut>
             <Button variant="secondary">
-              Sign in
+              <SignInButton/>
             </Button>
-          </Link>
-          <Link href="/signup">
+          </SignedOut>
+          <SignedIn>
+            <Button variant="secondary">
+              <SignOutButton/>
+            </Button>
+          </SignedIn>
+          <Link href="/sign-up">
             <Button>
               Get Started
             </Button>
