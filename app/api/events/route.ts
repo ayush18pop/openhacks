@@ -7,7 +7,7 @@ import { z } from 'zod';
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const limit = parseInt(searchParams.get('limit') || '9');
+    const limit = Math.max(1, Math.min(parseInt(searchParams.get('limit') || '9', 10), 50));
     const cursor = searchParams.get('cursor');
     const sortBy = searchParams.get('sortBy') || 'startAt';
     const order = searchParams.get('order') || 'asc';
@@ -18,9 +18,10 @@ export async function GET(request: NextRequest) {
       whereClause.mode = mode;
     }
 
+    // Fetch limit+1 items to check if there's a next page
     const events = await prisma.event.findMany({
-      take: limit,
-      ...(cursor && { skip: 1, cursor: { id: cursor } }),
+      take: limit + 1,
+      ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
       where: whereClause,
       orderBy: { [sortBy]: order },
       include: {
@@ -34,13 +35,15 @@ export async function GET(request: NextRequest) {
     });
 
     let nextCursor: string | null = null;
-    if (events.length === limit) {
-      nextCursor = events[limit - 1].id;
+    let pageData = events;
+    if (events.length > limit) {
+      nextCursor = events[limit].id;
+      pageData = events.slice(0, limit);
     }
 
     return NextResponse.json({
       success: true,
-      data: events,
+      data: pageData,
       nextCursor,
     });
   } catch (error) {

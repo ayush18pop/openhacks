@@ -1,9 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Button } from "../../components/retroui/Button";
 
 export default function ProfilePage() {
+
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/retroui/Card";
+import { Button } from "../../components/retroui/Button";
+import { Input } from "../../components/retroui/Input";
+import { Label } from "../../components/retroui/Label";
+
+export default function ProfilePage() {
+  const [step, setStep] = useState<"role" | "questions">("role");
+  const [role, setRole] = useState<"PARTICIPANT" | "ORGANISER" | "JUDGE" | null>(null);
+  const [answers, setAnswers] = useState<Record<string, string>>({});
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);

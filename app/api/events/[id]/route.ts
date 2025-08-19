@@ -5,9 +5,9 @@ import { z } from 'zod';
 
 // Define a clear type for the route context
 type RouteContext = {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
 // --- Updated Base Schema ---
@@ -38,7 +38,7 @@ const updateEventSchema = baseEventSchema.partial();
 // --- GET a Single Event by ID ---
 export async function GET(request: NextRequest, context: RouteContext) {
   try {
-    const eventId = context.params.id;
+    const { id: eventId } = await context.params;
     const event = await prisma.event.findUnique({
       where: { id: eventId },
       include: {
@@ -55,7 +55,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
     return NextResponse.json({ success: true, data: event });
   } catch (error) {
-    console.error(`Error fetching event ${context.params.id}:`, error);
+    console.error(`Error fetching event:`, error);
     return NextResponse.json({ error: 'Failed to fetch event' }, { status: 500 });
   }
 }
@@ -63,7 +63,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
 // --- PUT (Update) an Event by ID ---
 export async function PUT(request: NextRequest, context: RouteContext) {
   try {
-    const eventId = context.params.id;
+  const { id: eventId } = await context.params;
     const { userId } = getAuth(request);
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -91,7 +91,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
 
     return NextResponse.json({ success: true, data: updatedEvent });
   } catch (error) {
-    console.error(`Error updating event ${context.params.id}:`, error);
+    console.error(`Error updating event:`, error);
     return NextResponse.json({ error: 'Failed to update event' }, { status: 500 });
   }
 }
@@ -99,7 +99,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
 // --- DELETE an Event by ID ---
 export async function DELETE(request: NextRequest, context: RouteContext) {
   try {
-    const eventId = context.params.id;
+  const { id: eventId } = await context.params;
     const { userId } = getAuth(request);
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -117,7 +117,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
 
     return NextResponse.json({ success: true, message: 'Event deleted successfully' });
   } catch (error) {
-    console.error(`Error deleting event ${context.params.id}:`, error);
+    console.error(`Error deleting event:`, error);
     return NextResponse.json({ error: 'Failed to delete event' }, { status: 500 });
   }
 }
