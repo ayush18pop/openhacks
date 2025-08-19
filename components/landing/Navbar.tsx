@@ -1,29 +1,47 @@
-// components/landing/Navbar.tsx
 "use client";
 
 import Link from "next/link";
-import { Button } from "../ui/button";
+import { Button } from "../../components/retroui/Button";
+import { Text } from "../../components/retroui/Text";
 
 export default function Navbar() {
   return (
-    <header className="sticky top-0 z-50 bg-black/60 backdrop-blur border-b border-white/6">
+    <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border">
       <div className="mx-auto max-w-7xl px-4 py-4 flex items-center justify-between">
+        {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-          <span className="text-lg font-semibold">Open<span className="text-[#6C5CE7]">Hacks</span></span>
+          <Text as="span" className="text-lg font-bold text-foreground">
+            Open
+            <Text as="span" className="text-primary">
+              Hacks
+            </Text>
+          </Text>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-6 text-sm text-white/80">
-          <Link href="/events" className="hover:text-white">Events</Link>
-          <a href="#how" className="hover:text-white">How it works</a>
-          <a href="#sponsors" className="hover:text-white">Sponsors</a>
+        {/* Nav Links */}
+        <nav className="hidden md:flex items-center gap-6 text-sm text-muted-foreground">
+          <Link href="/events">
+            <Text className="hover:text-foreground transition-colors cursor-pointer">Events</Text>
+          </Link>
+          <Link href="#how">
+            <Text className="hover:text-foreground transition-colors cursor-pointer">How it works</Text>
+          </Link>
+          <Link href="#sponsors">
+            <Text className="hover:text-foreground transition-colors cursor-pointer">Sponsors</Text>
+          </Link>
         </nav>
 
+        {/* Buttons */}
         <div className="flex items-center gap-3">
           <Link href="/login">
-            <Button variant="ghost" className="px-4 py-2 text-sm">Sign in</Button>
+            <Button variant="secondary">
+              Sign in
+            </Button>
           </Link>
           <Link href="/signup">
-            <Button className="px-5 py-2 text-sm rounded-full">Get Started</Button>
+            <Button>
+              Get Started
+            </Button>
           </Link>
         </div>
       </div>

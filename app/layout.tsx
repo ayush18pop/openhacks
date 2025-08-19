@@ -3,6 +3,23 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 
+import { Archivo_Black, Space_Grotesk } from "next/font/google";
+ 
+const archivoBlack = Archivo_Black({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-head",
+  display: "swap",
+});
+ 
+const space = Space_Grotesk({
+  subsets: ["latin"],
+  weight: "700",
+  variable: "--font-sans",
+  display: "swap",
+});
+ 
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -35,11 +52,9 @@ export default function RootLayout({
       </ClerkProvider>
     ) : (
       <html lang="en">
-        <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-          <div className="w-full bg-yellow-100 text-yellow-800 text-sm py-2 px-4">Clerk not configured. Set NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY to enable auth UI.</div>
-          {children}
-        </body>
-      </html>
-    )
-  );
+      <body className={`${archivoBlack.variable} ${space.variable}`}>
+        {children}
+      </body>
+    </html>
+  ))
 }

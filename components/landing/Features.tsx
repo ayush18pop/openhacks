@@ -1,4 +1,6 @@
 // components/landing/Features.tsx
+import { Card, CardContent, CardTitle } from "../../components/retroui/Card"
+
 export default function Features() {
   const items = [
     { title: "Event Management", desc: "Create tracks, timelines, rules, prizes and sponsors." },
@@ -7,23 +9,30 @@ export default function Features() {
     { title: "Judging", desc: "Scorecards, aggregated leaderboards, and feedback." },
     { title: "Announcements", desc: "Real-time updates, Q&A, and reminders." },
     { title: "Role Dashboards", desc: "Separate views for participants, organizers & judges." },
-  ];
+  ]
 
   return (
     <section className="mt-16">
-      <h2 className="text-2xl font-semibold">Built for hackathons — everything you need</h2>
-      <p className="mt-2 text-sm text-white/70 max-w-2xl">
+      <h2 className="text-2xl font-bold text-foreground glass-border">
+        Built for hackathons — everything you need
+      </h2>
+      <p className="mt-2 text-sm text-muted-foreground max-w-2xl glass-border">
         A compact, opinionated feature set that covers the full event lifecycle from launch to judging.
       </p>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((it) => (
-          <div key={it.title} className="rounded-xl border border-white/8 bg-white/3 p-5">
-            <div className="text-lg font-semibold">{it.title}</div>
-            <div className="mt-2 text-sm text-white/70">{it.desc}</div>
-          </div>
+          <Card
+            key={it.title}
+            className="bg-background/50 border-border hover:scale-105 hover:shadow-2xl transition-all duration-300 backdrop-blur-sm p-5"
+          >
+            <CardContent className="px-0">
+              <CardTitle className="text-lg font-bold text-foreground">{it.title}</CardTitle>
+              <p className="mt-2 text-sm text-muted-foreground">{it.desc}</p>
+            </CardContent>
+          </Card>
         ))}
       </div>
     </section>
-  );
+  )
 }
