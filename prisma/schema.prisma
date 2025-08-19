@@ -1,18 +1,16 @@
-// OpenHacks - Role-Based Hackathon Platform
-// Three distinct user types:
-// 1. PARTICIPANT - Hackers/Students who join hackathons
-// 2. JUDGE - Industry experts who evaluate submissions  
-// 3. ORGANIZER - People who create and manage events
+// OpenHacks - Event-Based Authorization Platform
+// Authorization is now event-specific:
+// - Any user can organize events (create Event records)
+// - Event organizers assign judges per event via many-to-many relation
+// - All other users are participants by default
 
 generator client {
     provider = "prisma-client-js"
 }
 
 datasource db {
-    // provider = "sqlserver"
-    // url      = env("DATABASE_URL")
-    provider = "sqlite"
-    url      = "file:./dev.db"
+    provider = "sqlserver"
+    url      = env("DATABASE_URL")
 }
 
 model User {
@@ -21,36 +19,25 @@ model User {
     name   String?
     bio    String?
     avatar String?
-    role   String  @default("PARTICIPANT") // PARTICIPANT, JUDGE, ORGANIZER
 
-    // Common fields
-    website  String?
-    github   String?
-    linkedin String?
-    twitter  String?
-
-    // Participant-specific fields
-    skills         String? // JSON array of skills for participants
-    university     String? // University/School for participants
-    graduationYear Int? // Graduation year for participants
-
-    // Judge-specific fields
-    expertise  String? // Areas of expertise for judges
-    company    String? // Company/Organization for judges and organizers
-    position   String? // Job title for judges and organizers
-    yearsOfExp Int? // Years of experience for judges
-
-    // Organizer-specific fields
-    organization String? // Organization name for organizers
+    // Common fields for all users
+    website        String?
+    github         String?
+    linkedin       String?
+    twitter        String?
+    skills         String? // JSON array of skills
+    university     String? // University/School
+    graduationYear Int? // Graduation year
 
     // Relations
-    memberOfTeams Team[]         @relation("Members")
-    ownedTeams    Team[]         @relation("Owner")
-    registrations Registration[] @relation("UserRegistrations")
-    eventsCreated Event[]        @relation("EventCreator")
-    scores        Score[]        @relation("JudgeScores")
-    createdAt     DateTime       @default(now())
-    updatedAt     DateTime       @updatedAt
+    memberOfTeams   Team[]         @relation("Members")
+    ownedTeams      Team[]         @relation("Owner")
+    registrations   Registration[] @relation("UserRegistrations")
+    organizedEvents Event[]        @relation("EventOrganizer")
+    judgedEvents    Event[]        @relation("EventJudges")
+    scores          Score[]        @relation("JudgeScores")
+    createdAt       DateTime       @default(now())
+    updatedAt       DateTime       @updatedAt
 }
 
 model Event {
@@ -59,15 +46,16 @@ model Event {
     description   String
     theme         String?
     tracksJson    String?
-    mode          String // online | offline | hybrid
+    mode          String         @default("ONLINE")
     rules         String?
     timeline      String?
     prizes        String?
     sponsors      String?
     startAt       DateTime
     endAt         DateTime
-    createdById   String
-    createdBy     User           @relation("EventCreator", fields: [createdById], references: [id], onDelete: NoAction, onUpdate: NoAction)
+    organizerId   String
+    organizer     User           @relation("EventOrganizer", fields: [organizerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+    judges        User[]         @relation("EventJudges")
     teams         Team[]
     registrations Registration[]
     rounds        Round[]

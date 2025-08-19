@@ -15,10 +15,74 @@ export async function requireAuth() {
   return dbUser;
 }
 
-export async function requireRole(roles: Array<"ORGANIZER" | "JUDGE" | "PARTICIPANT">) {
+// Check if user is organizer of a specific event
+export async function requireEventOrganizer(eventId: string) {
   const user = await requireAuth();
   if (!user) return null;
-  const role = (user.role || "PARTICIPANT").toUpperCase() as "ORGANIZER" | "JUDGE" | "PARTICIPANT";
-  if (!roles.includes(role)) return null;
-  return user;
+  
+  const event = await prisma.event.findFirst({
+    where: { 
+      id: eventId,
+      organizerId: user.id 
+    }
+  });
+  
+  if (!event) return null;
+  return { user, event };
+}
+
+// Check if user is judge for a specific event
+export async function requireEventJudge(eventId: string) {
+  const user = await requireAuth();
+  if (!user) return null;
+  
+  const event = await prisma.event.findFirst({
+    where: { 
+      id: eventId,
+      judges: {
+        some: { id: user.id }
+      }
+    }
+  });
+  
+  if (!event) return null;
+  return { user, event };
+}
+
+// Check if user is organizer OR judge for a specific event
+export async function requireEventStaff(eventId: string) {
+  const user = await requireAuth();
+  if (!user) return null;
+  
+  const event = await prisma.event.findFirst({
+    where: { 
+      id: eventId,
+      OR: [
+        { organizerId: user.id },
+        { judges: { some: { id: user.id } } }
+      ]
+    }
+  });
+  
+  if (!event) return null;
+  return { user, event };
+}
+
+// Get user's role for a specific event
+export async function getUserEventRole(eventId: string, userId?: string) {
+  const user = userId ? { id: userId } : await requireAuth();
+  if (!user) return null;
+  
+  const event = await prisma.event.findUnique({
+    where: { id: eventId },
+    include: {
+      judges: { where: { id: user.id } }
+    }
+  });
+  
+  if (!event) return null;
+  
+  if (event.organizerId === user.id) return 'ORGANIZER';
+  if (event.judges.length > 0) return 'JUDGE';
+  return 'PARTICIPANT';
 }
