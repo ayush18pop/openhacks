@@ -32,7 +32,11 @@ export default async function DashboardPage() {
   //     },
   //   },
   // })
-//dummy data as of now
+  type Team = {
+    name: string
+    event?: object
+  }
+
   const user = {
     id: userId,
     name: "John Doe",
@@ -43,10 +47,14 @@ export default async function DashboardPage() {
     github: "https://github.com/johndoe",
     linkedin: "https://linkedin.com/in/johndoe",
     twitter: "https://twitter.com/johndoe",
+    bio: "This is a sample bio.",
     registrations: [],
     organizedEvents: [],
     judgedEvents: [],
-    memberOfTeams: [],
+    memberOfTeams: [
+      { name: "Winner Team" }, // example team object
+      // add more teams as needed
+    ] as Team[],
   }
 
   if (!user) {

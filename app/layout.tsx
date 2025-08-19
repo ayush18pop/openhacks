@@ -41,24 +41,15 @@ export default function RootLayout({
 }>) {
   const hasClerk = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
   return (
-    hasClerk ? (
       <QueryProvider>
         <ClerkProvider>
           <html lang="en">
             <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+              <Navbar />
               {children}
             </body>
         </html>
       </ClerkProvider>
       </QueryProvider>
-    ) : (
-      <html lang="en">
-      <body className={`${archivoBlack.variable} ${space.variable}`}>
-        <Navbar />
-        {children}
-      </body>
-    </html>
-    
-    
-  ))
+  )
 }

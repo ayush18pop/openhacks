@@ -1,19 +1,25 @@
 "use client";
 
-
-export default function ProfilePage() {
-
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/retroui/Card";
 import { Button } from "../../components/retroui/Button";
-import { Input } from "../../components/retroui/Input";
-import { Label } from "../../components/retroui/Label";
+import { useState, useEffect } from "react";
 
 export default function ProfilePage() {
   const [step, setStep] = useState<"role" | "questions">("role");
   const [role, setRole] = useState<"PARTICIPANT" | "ORGANISER" | "JUDGE" | null>(null);
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [profile, setProfile] = useState<any>(null);
+  interface Profile {
+    name?: string;
+    bio?: string;
+    website?: string;
+    github?: string;
+    linkedin?: string;
+    twitter?: string;
+    university?: string;
+    graduationYear?: string;
+    [key: string]: string | undefined;
+  }
+
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,8 +34,12 @@ export default function ProfilePage() {
         if (!res.ok) throw new Error("Failed to fetch profile");
         const data = await res.json();
         setProfile(data.data);
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("An unknown error occurred");
+        }
       } finally {
         setLoading(false);
       }
@@ -52,11 +62,14 @@ export default function ProfilePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(profile),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to update profile");
-      setSuccess("Profile updated successfully!");
-    } catch (err: any) {
-      setError(err.message);
+      if (!res.ok) throw new Error("Failed to save profile");
+      setSuccess("Profile saved successfully!");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("An unknown error occurred");
+      }
     } finally {
       setSaving(false);
     }
@@ -131,10 +144,10 @@ export default function ProfilePage() {
           placeholder="Graduation Year"
         />
       </div>
-
       <Button onClick={handleSave} disabled={saving}>
         {saving ? "Saving..." : "Save Profile"}
       </Button>
     </div>
   );
 }
+
