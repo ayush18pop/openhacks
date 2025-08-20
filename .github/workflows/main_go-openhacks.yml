@@ -52,10 +52,7 @@ jobs:
     needs: build
     permissions:
       id-token: write 
-      contents: read 
-    environment:
-      name: 'Production'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+      contents: read
       
     steps:
       - name: Download build artifact
