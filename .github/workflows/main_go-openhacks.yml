@@ -30,6 +30,7 @@ jobs:
           CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
           CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
           CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
         run: |
           npm ci
           npx prisma generate
@@ -89,3 +90,4 @@ jobs:
           app-name: 'go-openhacks'
           slot-name: 'Production'
           package: .
+
