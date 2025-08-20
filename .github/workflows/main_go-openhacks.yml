@@ -1,6 +1,5 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
-
 name: Build and deploy Node.js app to Azure Web App - go-openhacks
 
 on:
@@ -12,29 +11,26 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
+        
       - name: Set up Node.js 20.x
         uses: actions/setup-node@v3
         with:
           node-version: '20.x'
           cache: 'npm'
-
-      - name: Install dependencies, generate client, and build application
-        run: |
-          # Create a .env file using all the secrets you have
-          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
-          echo "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}" >> .env
-          echo "CLERK_SECRET_KEY=${{ secrets.CLERK_SECRET_KEY }}" >> .env
-          echo "CLOUDINARY_URL=${{ secrets.CLOUDINARY_URL }}" >> .env
-          echo "CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME }}" >> .env
-          echo "CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }}" >> .env
-          echo "CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}" >> .env
           
-          # Now run the install and build commands
+      - name: Install dependencies, generate client, and build application
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          CLOUDINARY_URL: ${{ secrets.CLOUDINARY_URL }}
+          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+        run: |
           npm install
           npx prisma generate
           npm run build --if-present
@@ -43,7 +39,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: .
+          path: |
+            .next/
+            node_modules/
+            public/
+            package*.json
+            prisma/
+            .env.local
 
   deploy:
     runs-on: ubuntu-latest
@@ -51,7 +53,10 @@ jobs:
     permissions:
       id-token: write 
       contents: read 
-
+    environment:
+      name: 'Production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+      
     steps:
       - name: Download build artifact
         uses: actions/download-artifact@v4
@@ -64,15 +69,17 @@ jobs:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_32620E2CD0054EDAB498AE60CBBDFD6C }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_DBA790D5D0814532B4DA7D6CB0DD8E99 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_F0C4EF574E6C4F6F814D91BD6918169B }}
-
+          
       - name: Install production dependencies
-        run: npm install --omit=dev
-
+        run: npm ci --omit=dev
+        
       - name: Run database migrations
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: npx prisma migrate deploy
-
+        run: |
+          npx prisma generate
+          npx prisma migrate deploy
+          
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
