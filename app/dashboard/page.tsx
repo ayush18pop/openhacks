@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from 'next/image';
 import { useQuery } from "@tanstack/react-query";
+import { downloadCertificate } from "@/lib/certificate";
 import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../components/retroui/Card";
@@ -24,10 +25,12 @@ import {
   Award,
   Target,
   Zap,
-  
+  Download,
   BookOpen,
   Activity
 } from "lucide-react";
+import Announcements from "../../components/Announcements";
+import AnnouncementForm from "../../components/AnnouncementForm";
 
 // --- Data Fetching Hook ---
 const useDashboardData = () => {
@@ -197,6 +200,7 @@ function RecentActivity() {
 // --- Main Dashboard Component ---
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState('participant');
+
   const { data: response, isLoading, error } = useDashboardData();
   const { user: clerkUser } = useUser();
   const user = response?.data;
@@ -355,6 +359,7 @@ export default function DashboardPage() {
 
         {/* Sidebar */}
         <div className="xl:col-span-1 space-y-8">
+          <Announcements />
           <QuickActions activeTab={activeTab} />
           <RecentActivity />
         </div>
@@ -458,6 +463,20 @@ function EventCard({
   actionText: string;
   participants?: number;
 }) {
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const handleDownloadCertificate = async (eventId: string) => {
+    setIsDownloading(true);
+    try {
+      await downloadCertificate(eventId);
+    } catch (error) {
+      console.error('Error downloading certificate:', error);
+      // You might want to show a toast notification here
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   const isUpcoming = status === 'upcoming';
   const eventDate = new Date(event.startAt);
   const daysUntil = Math.ceil((eventDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
@@ -501,12 +520,25 @@ function EventCard({
             </div>
           </div>
         </div>
-        <Link href={actionHref}>
-          <Button className="hover:scale-105 transition-transform whitespace-nowrap">
-            {actionText} 
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
-        </Link>
+        <div className="flex flex-col sm:flex-row gap-2">
+          {!isUpcoming && (
+            <Button 
+              variant="outline" 
+              className="hover:scale-105 transition-transform whitespace-nowrap bg-white"
+              onClick={() => handleDownloadCertificate(event.id)}
+              disabled={isDownloading}
+            >
+              <Download className="w-4 h-4 mr-2" />
+              {isDownloading ? 'Generating...' : 'Certificate'}
+            </Button>
+          )}
+          <Link href={actionHref}>
+            <Button className="hover:scale-105 transition-transform whitespace-nowrap">
+              {actionText} 
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </Link>
+        </div>
       </div>
     </div>
   );
@@ -533,6 +565,7 @@ function OrganizerDashboard({ data }: { data: OrganizedEvent[] }) {
     );
   }
 
+  const firstEventId = data[0]?.id;
   return (
     <Card className="border-2 w-full">
       <CardHeader className="pb-4">
@@ -545,6 +578,7 @@ function OrganizerDashboard({ data }: { data: OrganizedEvent[] }) {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        <AnnouncementForm eventId={firstEventId} />
         {data.map(event => (
           <div key={event.id} className="border-2 border-border p-6 rounded-lg transition-all hover:shadow-lg hover:scale-[1.02] bg-gradient-to-r from-purple-50 to-pink-50">
             <div className="flex justify-between items-start gap-6">

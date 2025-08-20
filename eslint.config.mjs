@@ -15,7 +15,18 @@ const eslintConfig = [
 
 // Exclude generated and dependency folders from linting
 const finalConfig = [
-  { ignores: [".next/**", "node_modules/**", "dist/**", "build/**"] },
+  { ignores: [
+    ".next/**",
+    "node_modules/**",
+    "dist/**",
+    "build/**",
+    ".env",
+    ".env.local",
+    ".vercel/**",
+    ".cache/**",
+    ".turbo/**",
+    ".vscode/**",
+  ] },
   ...eslintConfig,
 ];
 

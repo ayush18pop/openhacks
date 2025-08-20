@@ -7,10 +7,11 @@ export async function requireAuth() {
   const clerkUser = await currentUser();
   const email = clerkUser?.emailAddresses?.[0]?.emailAddress;
   const name = `${clerkUser?.firstName ?? ""} ${clerkUser?.lastName ?? ""}`.trim() || clerkUser?.username || email || userId;
+  const avatar = clerkUser?.imageUrl;
   const dbUser = await prisma.user.upsert({
     where: { id: userId },
-    update: { email: email ?? `${userId}@example.local`, name },
-    create: { id: userId, email: email ?? `${userId}@example.local`, name },
+    update: { email: email ?? `${userId}@example.local`, name, avatar },
+    create: { id: userId, email: email ?? `${userId}@example.local`, name, avatar },
   });
   return dbUser;
 }
