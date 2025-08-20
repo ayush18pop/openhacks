@@ -24,7 +24,7 @@
     "cloudinary": "^2.7.0",
     "clsx": "^2.1.1",
     "lucide-react": "^0.540.0",
-    "mongodb": "^6.9.0",
+    "mongodb": "^6.18.0",
     "motion": "^12.23.12",
     "multer": "^2.0.2",
     "next": "15.4.6",

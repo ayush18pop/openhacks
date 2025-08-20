@@ -22,9 +22,16 @@ import { Button } from "../../../../components/retroui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../../components/retroui/Card";
 import { Input } from "../../../../components/retroui/Input";
 import { useToast } from "../../../../components/retroui/Toast";
+import SubmissionSection from "../../../../components/SubmissionSection";
 
 type Event = { id: string; title: string; rules?: string | null; startAt: string; endAt: string; };
-type Team = { id: string; name: string; ownerId: string; members: { id: string; name: string | null }[] };
+type Team = { 
+  id: string; 
+  name: string; 
+  eventId: string;
+  ownerId: string; 
+  members: { id: string; name: string | null }[] 
+};
 type Invite = { id: string; team: { name: string } };
 type ApiResponse = { success?: boolean; data?: unknown; message?: string; error?: string };
 
@@ -213,13 +220,15 @@ export default function RegistrationPage() {
                     ) : teams.length > 0 ? (
                       <div className="space-y-4">
                         {teams.map(team => (
-                          <TeamCard 
-                            key={team.id} 
-                            team={team} 
-                            currentUserId={userId} 
-                            eventId={eventId}
-                            onToast={showToast}
-                          />
+                          <div key={team.id} className="space-y-4">
+                            <TeamCard 
+                              team={team} 
+                              currentUserId={userId} 
+                              eventId={eventId}
+                              onToast={showToast}
+                            />
+                            <SubmissionSection team={{ ...team, eventId }} />
+                          </div>
                         ))}
                       </div>
                     ) : (

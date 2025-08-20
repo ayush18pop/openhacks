@@ -1,0 +1,20 @@
+generator mongoClient {
+    provider = "prisma-client-js"
+    output   = "../node_modules/.prisma/mongodb-client"
+}
+
+datasource mongodb {
+    provider = "mongodb"
+    url      = env("MONGO_DATABASE_URL")
+}
+
+model Submission {
+    id          String   @id @default(auto()) @map("_id") @db.ObjectId
+    projectName String
+    description String
+    githubUrl   String
+    eventId     String // References SQL Event.id
+    teamId      String // References SQL Team.id
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+}

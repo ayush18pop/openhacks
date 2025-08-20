@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '../../../../../src/lib/prisma';
 import { getAuth } from '@clerk/nextjs/server';
 import { z } from 'zod';
 
@@ -26,6 +26,48 @@ async function authorizeOrganizer(userId: string, eventId: string) {
 const judgeActionSchema = z.object({
   judgeId: z.string().min(1, 'judgeId is required'),
 });
+
+// GET - List all judges for an event
+export async function GET(request: NextRequest, context: RouteContext) {
+  try {
+    const { userId } = getAuth(request);
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { id: eventId } = await context.params;
+    const auth = await authorizeOrganizer(userId, eventId);
+    if (!auth.success) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status });
+    }
+
+    const event = await prisma.event.findUnique({
+      where: { id: eventId },
+      include: {
+        judges: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+            bio: true,
+            skills: true,
+            university: true
+          }
+        }
+      }
+    });
+
+    if (!event) {
+      return NextResponse.json({ error: 'Event not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true, data: event.judges });
+  } catch (error: unknown) {
+    console.error('Error fetching judges:', error);
+    return NextResponse.json({ error: 'Failed to fetch judges' }, { status: 500 });
+  }
+}
 
 export async function POST(request: NextRequest, context: RouteContext) {
   try {

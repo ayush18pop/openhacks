@@ -47,7 +47,7 @@ model Event {
     prizes         String?
     sponsors       String?
     organizersJson String?
-    faqsJson       String?        // Store FAQs as JSON string
+    faqsJson       String? // Store FAQs as JSON string
     startAt        DateTime
     endAt          DateTime
     organizerId    String

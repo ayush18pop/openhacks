@@ -231,10 +231,15 @@ export default function EventDetailPage() {
                     </div>
                 </CardContent>
               </Card>
-              {/* Organizer-only Delete Button */}
+              {/* Organizer-only Controls */}
               {clerkUser?.id && event.organizer?.id && clerkUser.id === event.organizer.id && (
                 <Card>
-                  <CardContent className="p-4">
+                  <CardContent className="p-4 space-y-2">
+                    <Link href={`/events/${eventId}/manage`} passHref>
+                      <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                        Manage Event
+                      </Button>
+                    </Link>
                     <Button className="w-full bg-red-600 hover:bg-red-700 text-white" onClick={handleDelete} disabled={deleting}>
                       {deleting ? 'Deleting...' : 'Delete Event'}
                     </Button>
