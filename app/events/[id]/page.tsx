@@ -1,9 +1,12 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { useEvent, useRegistrationStatus } from "../../../hooks/useHackathonData"; // Adjust path if needed
+import { useEvent, useRegistrationStatus } from "../../../hooks/useHackathonData";
+import FAQSection from "../../../components/events/FAQSection";
+import { useState, useCallback } from "react";
+import { useUser } from "@clerk/nextjs";
 
 import { Calendar, User, Trophy, BookOpen, Scale, Award, Hash, ArrowRight } from "lucide-react";
 import { Button } from "../../../components/retroui/Button";
@@ -39,14 +42,39 @@ export default function EventDetailPage() {
     endAt: string;
     theme?: string;
     mode: string;
-    organizer: { name: string };
-  tracksJson?: string | null;
-  timeline?: string | null;
-  organizersJson?: string | null;
+    organizer: { id?: string; name: string };
+    tracksJson?: string | null;
+    timeline?: string | null;
+    organizersJson?: string | null;
+    faqs?: Array<{ question: string; answer: string }>;
   }
 
-  const event = (eventResponse as { data?: Event })?.data;
+  const event = (eventResponse as { data?: Event & { faqs?: Array<{ question: string; answer: string }> } })?.data;
   const isRegistered = (registrationResponse as { isRegistered?: boolean })?.isRegistered;
+  const { user: clerkUser } = useUser();
+  const router = useRouter();
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDelete = useCallback(async () => {
+    if (!confirm('Are you sure you want to delete this event? This action cannot be undone.')) return;
+    try {
+      setDeleting(true);
+      const res = await fetch(`/api/events/${eventId}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        const message = json?.message || res.statusText || 'Delete failed';
+        alert(`Failed to delete event: ${message}`);
+        setDeleting(false);
+        return;
+      }
+      // Redirect to events list after successful deletion
+      router.push('/events');
+    } catch (err) {
+      console.error(err);
+      alert('An error occurred while deleting the event.');
+      setDeleting(false);
+    }
+  }, [eventId, router]);
 
   // --- Render Logic ---
   if (isLoading) {
@@ -203,7 +231,23 @@ export default function EventDetailPage() {
                     </div>
                 </CardContent>
               </Card>
-
+              {/* Organizer-only Delete Button */}
+              {clerkUser?.id && event.organizer?.id && clerkUser.id === event.organizer.id && (
+                <Card>
+                  <CardContent className="p-4">
+                    <Button className="w-full bg-red-600 hover:bg-red-700 text-white" onClick={handleDelete} disabled={deleting}>
+                      {deleting ? 'Deleting...' : 'Delete Event'}
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
+              
+              {/* FAQ Section */}
+              {event?.faqs && event.faqs.length > 0 && (
+                <div className="mt-6">
+                  <FAQSection faqs={event.faqs} />
+                </div>
+              )}
             </div>
           </aside>
         </div>
@@ -211,4 +255,3 @@ export default function EventDetailPage() {
     </div>
   );
 }
-

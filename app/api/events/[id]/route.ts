@@ -3,24 +3,21 @@ import { prisma } from '../../../../src/lib/prisma';
 import { getAuth } from '@clerk/nextjs/server';
 import { z } from 'zod';
 
-// Define a clear type for the route context
 type RouteContext = {
   params: Promise<{
     id: string;
   }>;
 };
 
-// --- Updated Base Schema ---
 const baseEventSchema = z.object({
     title: z.string().min(3, 'Title must be at least 3 characters').max(100),
     description: z.string().min(10, 'Description is required'),
     mode: z.enum(['ONLINE', 'OFFLINE', 'HYBRID']),
     startAt: z.string().datetime(),
     endAt: z.string().datetime(),
-    theme: z.string().optional(),
-    // Add thumbnail and banner fields, validated as URLs
-    thumbnail: z.string().url().optional().nullable(),
-    banner: z.string().url().optional().nullable(),
+  theme: z.string().optional(),
+  thumbnail: z.string().url().optional().nullable(),
+  banner: z.string().url().optional().nullable(),
   })
   .refine((data) => {
     if (data.startAt && data.endAt) {
@@ -32,10 +29,8 @@ const baseEventSchema = z.object({
     path: ['endAt'],
   });
 
-// Create the update schema by making all fields partial
 const updateEventSchema = baseEventSchema.partial();
 
-// --- GET a Single Event by ID ---
 export async function GET(request: NextRequest, context: RouteContext) {
   try {
     const { id: eventId } = await context.params;
@@ -46,6 +41,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
         judges: { select: { id: true, name: true, avatar: true } },
         teams: true,
         registrations: { include: { user: { select: { id: true, name: true, avatar: true } } } },
+        faqs: true,
       },
     });
 
@@ -60,7 +56,6 @@ export async function GET(request: NextRequest, context: RouteContext) {
   }
 }
 
-// --- PUT (Update) an Event by ID ---
 export async function PUT(request: NextRequest, context: RouteContext) {
   try {
   const { id: eventId } = await context.params;
@@ -84,9 +79,30 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: 'Invalid input', details: validation.error.flatten().fieldErrors }, { status: 400 });
     }
 
-    const updatedEvent = await prisma.event.update({
-      where: { id: eventId },
-      data: validation.data, // Zod ensures only valid, schema-defined fields are passed
+  const parsed = validation.data as z.infer<typeof updateEventSchema>;
+
+    const updatedEvent = await prisma.$transaction(async (prisma) => {
+      const updated = await prisma.event.update({
+        where: { id: eventId },
+        data: {
+          ...validation.data,
+          faqs: 'faqs' in parsed ? {
+            deleteMany: {},
+            createMany: {
+              data: Array.isArray(parsed.faqs) ? parsed.faqs.map((faq: { question: string; answer: string }) => ({
+                question: faq.question,
+                answer: faq.answer
+              })) : []
+            }
+          } : undefined,
+        },
+        include: {
+          faqs: true
+        }
+      });
+
+      return updated;
+
     });
 
     return NextResponse.json({ success: true, data: updatedEvent });
@@ -96,7 +112,6 @@ export async function PUT(request: NextRequest, context: RouteContext) {
   }
 }
 
-// --- DELETE an Event by ID ---
 export async function DELETE(request: NextRequest, context: RouteContext) {
   try {
   const { id: eventId } = await context.params;
@@ -113,7 +128,10 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: 'Forbidden: You are not the organizer' }, { status: 403 });
     }
 
-    await prisma.event.delete({ where: { id: eventId } });
+    await prisma.event.delete({ 
+      where: { id: eventId },
+      include: { faqs: true }
+    });
 
     return NextResponse.json({ success: true, message: 'Event deleted successfully' });
   } catch (error) {

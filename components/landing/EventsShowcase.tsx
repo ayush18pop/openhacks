@@ -1,49 +1,59 @@
-// components/landing/EventsShowcase.tsx
-import Link from "next/link"
-import { Card, CardHeader, CardTitle, CardContent } from "../../components/retroui/Card"
+import Link from "next/link";
+import { prisma } from "../../src/lib/prisma";
+import { Card, CardHeader, CardTitle, CardContent } from "../../components/retroui/Card";
+import { ArrowRight } from "lucide-react";
 
-const SAMPLE = [
-  { id: "synaphack-3", title: "SynapHack 3.0", tagline: "36-hour student hackathon", start: "Aug 25", online: true },
-  { id: "buildweek", title: "Build Week", tagline: "Prototype & ship", start: "Sep 10", online: false, location: "Delhi" },
-  { id: "ui-challenge", title: "UI Challenge", tagline: "Design & implement", start: "Sep 18", online: true },
-]
+const formatDate = (date: Date) => {
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+};
 
-export default function EventsShowcase() {
+export default async function EventsShowcase() {
+  const upcomingEvents = await prisma.event.findMany({
+    where: {
+      startAt: {
+        gte: new Date(),
+      },
+    },
+    orderBy: {
+      startAt: 'asc',
+    },
+    take: 3,
+  });
+
   return (
-    <section className="mt-16">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-foreground">Upcoming Events</h2>
-        <Link href="/events" className="text-sm text-muted-foreground hover:underline">
-          Browse All
+    <section className="container mx-auto px-4 py-16">
+      <div className="flex items-center justify-between mb-8">
+        <h2 className="text-3xl">Upcoming Events</h2>
+        <Link href="/events" className="text-sm text-muted-foreground hover:underline flex items-center gap-1">
+          Browse All <ArrowRight className="w-4 h-4" />
         </Link>
       </div>
 
-      {/* Event Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {SAMPLE.map((e) => (
-          <Link key={e.id} href={`/events/${e.id}`}>
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {upcomingEvents.map((event) => (
+          <Link key={event.id} href={`/events/${event.id}`} className="block group">
             <Card
-              className="cursor-pointer border border-border bg-background/50 backdrop-blur-sm 
-                hover:scale-105 hover:shadow-2xl hover:border-foreground/30 transition-all duration-300"
+              className="border-2 border-border bg-card h-full flex flex-col transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
             >
               <CardHeader>
-                <CardTitle className="flex justify-between items-center text-foreground">
-                  {e.title}
-                  <span className="text-xs text-muted-foreground">
-                    {e.online ? "Online" : e.location ?? "Offline"}
-                  </span>
-                </CardTitle>
+                <div className="flex justify-between items-start">
+                    <CardTitle className="text-xl pr-2">{event.title}</CardTitle>
+                    <span className="text-xs text-primary-foreground bg-secondary font-bold px-2 py-1 whitespace-nowrap">
+                        {event.mode}
+                    </span>
+                </div>
               </CardHeader>
 
-              <CardContent>
-                <p className="text-sm text-muted-foreground">{e.tagline}</p>
-                <div className="mt-2 text-xs text-muted-foreground">Starts: {e.start}</div>
+              <CardContent className="flex flex-col flex-grow">
+                <p className="text-sm text-muted-foreground flex-grow">{event.theme || event.description.substring(0, 80) + '...'}</p>
+                <div className="mt-4 pt-4 border-t-2 border-border text-sm font-bold text-foreground">
+                  Starts: {formatDate(event.startAt)}
+                </div>
               </CardContent>
             </Card>
           </Link>
         ))}
       </div>
     </section>
-  )
+  );
 }

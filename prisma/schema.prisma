@@ -47,6 +47,7 @@ model Event {
     prizes         String?
     sponsors       String?
     organizersJson String?
+    faqsJson       String?        // Store FAQs as JSON string
     startAt        DateTime
     endAt          DateTime
     organizerId    String
@@ -55,10 +56,21 @@ model Event {
     teams          Team[]
     registrations  Registration[]
     rounds         Round[]
+    faqs           FAQ[]
     createdAt      DateTime       @default(now())
     updatedAt      DateTime       @updatedAt
     thumbnail      String?
     banner         String?
+}
+
+model FAQ {
+    id        String   @id @default(cuid())
+    question  String
+    answer    String
+    eventId   String
+    event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 }
 
 model Team {

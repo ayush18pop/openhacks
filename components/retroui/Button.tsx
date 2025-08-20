@@ -13,6 +13,8 @@ const buttonVariants = cva(
           "shadow-md hover:shadow-none bg-yellow-200 text-black border-2 border-black transition hover:translate-y-1 hover:bg-yellow-100",
         outline:
           "shadow-md hover:shadow-none bg-transparent border-2 border-black text-black transition hover:translate-y-1",
+        ghost:
+          "bg-transparent hover:bg-gray-100 text-black transition",
         link: "bg-transparent text-yellow-400 hover:underline",
       },
       size: {
@@ -32,7 +34,7 @@ const buttonVariants = cva(
 
 export interface IButtonProps
   extends ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {}
+  VariantProps<typeof buttonVariants> { }
 
 export const Button = React.forwardRef<HTMLButtonElement, IButtonProps>(
   (
