@@ -53,32 +53,25 @@ export async function GET(request: NextRequest) {
 }
 
 // --- Updated Zod Schema ---
-const faqSchema = z.object({
-  question: z.string().min(1, 'Question is required'),
-  answer: z.string().min(1, 'Answer is required')
-});
-
 const createEventSchema = z.object({
-  title: z.string().min(3, 'Title must be at least 3 characters long').max(100),
-  description: z.string().min(10, 'Description must be at least 10 characters long'),
-  mode: z.enum(['ONLINE', 'OFFLINE', 'HYBRID']).default('ONLINE'),
-  startAt: z.string().datetime(),
-  endAt: z.string().datetime(),
-  theme: z.string().optional(),
-  rules: z.string().optional(),
-  prizes: z.string().optional(),
+    title: z.string().min(3, 'Title must be at least 3 characters long').max(100),
+    description: z.string().min(10, 'Description must be at least 10 characters long'),
+    mode: z.enum(['ONLINE', 'OFFLINE', 'HYBRID']).default('ONLINE'),
+    startAt: z.string().datetime(),
+    endAt: z.string().datetime(),
+    theme: z.string().optional(),
+    rules: z.string().optional(),
+    prizes: z.string().optional(),
   // timeline can be an array of strings or raw string
   timeline: z.union([z.array(z.string()), z.string()]).optional(),
   // organizers can be supplied as array of emails/ids or raw string
   organizers: z.union([z.array(z.string()), z.string()]).optional(),
   // tracks can be provided as an array of strings or a raw string (JSON or newline-separated)
   tracks: z.union([z.array(z.string()), z.string()]).optional(),
-  // Add thumbnail and banner fields, validated as URLs
-  thumbnail: z.string().url().optional().nullable(),
-  banner: z.string().url().optional().nullable(),
-  // FAQs array
-  faqs: z.array(faqSchema).optional().default([]),
-})
+    // Add thumbnail and banner fields, validated as URLs
+    thumbnail: z.string().url().optional().nullable(),
+    banner: z.string().url().optional().nullable(),
+  })
   .refine((data) => new Date(data.endAt) > new Date(data.startAt), {
     message: 'End date must be after the start date',
     path: ['endAt'],
@@ -165,43 +158,26 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const event = await prisma.$transaction(async (prisma) => {
-      // First create the event
-      const newEvent = await prisma.event.create({
-        data: {
-          title: eventData.title,
-          description: eventData.description,
-          mode: eventData.mode,
-          theme: eventData.theme || null,
-          startAt: new Date(eventData.startAt),
-          endAt: new Date(eventData.endAt),
-          rules: eventData.rules || null,
-          prizes: eventData.prizes || null,
-          tracksJson: tracksJson || null,
-          timeline: timelineJson || null,
-          organizersJson: organizersJson || null,
-          thumbnail: eventData.thumbnail || null,
-          banner: eventData.banner || null,
-          organizerId: user.id, // Set the organizer
-          // Include FAQ creation in the same transaction
-          faqs: eventData.faqs && eventData.faqs.length > 0 ? {
-            createMany: {
-              data: eventData.faqs.map(faq => ({
-                question: faq.question,
-                answer: faq.answer
-              }))
-            }
-          } : undefined,
-        },
-        include: {
-          faqs: true // Include the created FAQs in the response
-        }
-      });
-
-      return newEvent;
+    const newEvent = await prisma.event.create({
+      data: {
+        title: eventData.title,
+        description: eventData.description,
+        mode: eventData.mode,
+        startAt: new Date(eventData.startAt),
+        endAt: new Date(eventData.endAt),
+        theme: eventData.theme,
+        rules: eventData.rules,
+        prizes: eventData.prizes,
+        thumbnail: eventData.thumbnail,
+        banner: eventData.banner,
+        organizerId: user.id,
+        ...(tracksJson ? { tracksJson } : {}),
+  ...(timelineJson ? { timeline: timelineJson } : {}),
+  ...(organizersJson ? { organizersJson } : {}),
+      },
     });
 
-    return NextResponse.json({ success: true, data: event }, { status: 201 });
+    return NextResponse.json({ success: true, data: newEvent }, { status: 201 });
   } catch (error) {
     console.error('Error creating event:', error);
     return NextResponse.json({ error: 'Failed to create event' }, { status: 500 });
